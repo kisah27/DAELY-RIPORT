@@ -1,0 +1,115 @@
+=====================================================
+PANDUAN PASANG DAELY-RIPORT DI GITHUB
+=====================================================
+
+A. CARA MEMASANG (COPY HTML KE GITHUB)
+-----------------------------------------------------
+1. Buka file DAELY-RIPORT.html (pakai Notepad / editor teks),
+   lalu SALIN SELURUH ISINYA (Ctrl+A, Ctrl+C).
+2. Buka https://github.com -> login -> klik tombol "+" (kanan atas)
+   -> "New repository".
+   - Repository name: daely-riport (atau bebas)
+   - Pilih Public
+   - Klik "Create repository"
+3. Di halaman repo, klik "creating a new file" atau tombol
+   "Add file -> Create new file".
+   - Nama file wajib: index.html
+   - Tempel (Ctrl+V) seluruh kode HTML ke kotak besar.
+4. Klik "Commit changes".
+5. Aktifkan halaman web:
+   Settings -> (kiri) Pages -> Branch: pilih "main" + "/ (root)"
+   -> Save. Tunggu 1-2 menit.
+6. Aplikasi online di alamat:
+   https://NAMA-USER-GITHUB.github.io/daely-riport/
+   Bagikan alamat itu ke semua orang. Bisa dibuka di HP.
+
+TIP: kalau nanti ingin mengubah kode, buka index.html di repo ->
+ikonen pensil (Edit) -> ubah -> Commit. Setiap orang otomatis
+dapat versi terbaru setelah refresh halaman.
+
+B. WAJIB: AKTIFKAN FIRESTORE AGAR DATA SAMA DI SEMUA ORANG
+-----------------------------------------------------
+Sampai langkah ini dilakukan, aplikasi tetap jalan tetapi
+bertulisan "Mode Lokal" (data hanya tersimpan di HP/laptop
+masing-masing). Setelah diaktifkan, tulisan berubah menjadi
+"Terhubung Firebase" dan semua input pengurus otomatis muncul
+di HP semua orang dalam hitungan detik.
+
+1. Buka https://console.firebase.google.com -> pilih project
+   "dealy-riport".
+2. Menu kiri: Build -> Firestore Database -> tombol "Create
+   database".
+
+   PENTING: pilih menu yang bertuliskan "FIRESTORE DATABASE",
+   BUKAN "REALTIME DATABASE". Dua menu ini mirip nama dan
+   letaknya berdampingan, tetapi produknya berbeda. Cek judul
+   besar di atas halaman: harus tertulis "Firestore Database".
+   Kalau tertulis "Realtime Database" (mis. muncul error merah
+   "Error saving rules - Parse error"), berarti salah masuk
+   menu -- kembali ke menu utama dan pilih Firestore Database.
+
+3. Pilih "Start in production mode" -> lokasi bebas (mis.
+   asia-southeast1 / singapore) -> Enable.
+4. Masih di Firestore, buka tab "Rules", hapus semua isinya,
+   ganti menjadi (versi 2, standar Firebase sekarang):
+
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read, write: if true;
+       }
+     }
+   }
+
+   lalu klik "Publish".
+5. Buka aplikasi DAELY-RIPORT, refresh halaman. Indikator di
+   bawah judul harus berubah jadi: "Terhubung Firebase".
+
+Catatan keamanan: rules di atas terbuka untuk semua orang
+(sesuai permintaan "dapat dipakai semua orang"). Siapa pun yang
+punya link bisa menambah/mengubah data. Jika suatu hari ingin
+lebih aman, bisa ditambahkan login, tapi datanya harus tetap
+sama untuk semua pengguna.
+
+C. CARA PAKAI SINGKAT
+-----------------------------------------------------
+INPUT LAPORAN
+- TANGGAL: terisi hari ini otomatis; klik kolomnya untuk
+  membuka kalender.
+- NO POLISI: pilih dari dropdown. Pilihan diambil dari
+  MASTER NO POLISI. Pilih "Tambah No Polisi Baru" bila unit
+  belum terdaftar -> langsung tersimpan ke master.
+- KONTRAK: terisi OTOMATIS mengikuti kontrak no polisi.
+- TUJUAN: dropdown dari MASTER TUJUAN (bisa tambah baru).
+- STATUS: dropdown (KIRIM / STANDBY / INAP / STORING
+  PERBAIKAN). Saat no polisi dipilih, status otomatis mengikuti
+  status terakhir unit tersebut; boleh diubah manual.
+- SIMPAN: data langsung masuk REKAP dan tersinkron ke semua
+  perangkat.
+
+REKAP LAPORAN
+- Default menampilkan laporan hari ini; tombol "Tampilkan
+  Semua" untuk melihat seluruh riwayat, "Hari Ini" untuk
+  kembali.
+- Setiap baris ada tombol: WhatsApp (kirim 1 laporan),
+  Edit, dan Hapus.
+- "Kirim Rekap via WhatsApp": mengirim seluruh isi rekap yang
+  sedang tampil (WhatsApp akan membuka pilihan kontak/group).
+- "Export Excel Harian": unduh .xlsx sesuai filter tanggal.
+- "Export Excel Bulanan": pilih bulan dulu, lalu unduh .xlsx
+  berisi 2 sheet: Laporan + Rekap Per Unit. Data bulanan aman
+  karena tersimpan di database (tidak hilang ganti tanggal).
+
+MASTER (NO POLISI / TUJUAN / STATUS)
+- Tambah lewat form di atas tabel, Edit/Hapus di kolom AKSI.
+- Semua isian master otomatis dipakai sebagai dropdown di
+  Input Laporan.
+- MASTER STATUS berisi 4 pilihan bawaan: KIRIM, STANDBY, INAP,
+  STORING PERBAIKAN (boleh ditambah/diedit/dihapus).
+
+D. FILE
+-----------------------------------------------------
+- DAELY-RIPORT.html  -> kode yang di-paste ke GitHub (index.html)
+- PANDUAN ini        -> disimpan sebagai teks
+=====================================================
