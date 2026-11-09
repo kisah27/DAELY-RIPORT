@@ -47,7 +47,9 @@ h2 .cnt{font-size:13px;color:#fff;background:var(--blue);border-radius:999px;pad
 .form-col{display:flex;flex-direction:column;gap:13px;max-width:540px;margin:0 auto}
 label{font-size:12.5px;font-weight:700;color:var(--navy);letter-spacing:.4px;margin-bottom:-7px}
 input[type=text],input[type=date],input[type=month],select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#fbfdff;color:var(--text);outline:none;font-family:inherit}
-input:focus,select:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+textarea{width:100%;min-height:120px;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;background:#fbfdff;color:var(--text);outline:none;font-family:inherit;line-height:1.5;resize:vertical}
+.sel-mini{padding:7px 8px;border:1.5px solid var(--line);border-radius:8px;font-size:12.5px;background:#fff;font-family:inherit;font-weight:700;color:var(--navy);outline:none}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .row>*{flex:1;min-width:130px}
 .row .btn{flex:0 0 auto;min-width:0}
@@ -93,6 +95,19 @@ td.nowrap{white-space:nowrap}
 /* ===== EXPORT BAR ===== */
 .exportbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:end}
 .exportbar>div{display:flex;flex-direction:column;gap:5px}
+/* ===== PRATINJAU ANTRIAN ===== */
+#antPreview{display:none;margin-top:12px;background:var(--sky);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.pv-head{font-size:13px;font-weight:700;color:var(--navy2);margin-bottom:6px}
+.pv-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.pv-row:last-of-type{border-bottom:none}
+.pv-row select{width:auto;flex:0 0 200px}
+.pv-row .btn{flex:0 0 auto;width:auto}
+.pv-row label{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--navy);min-width:160px;margin-bottom:0}
+.pv-pol{letter-spacing:.5px}
+.pv-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.tag-baru{background:#e3f7e8;color:#0a7a35}
+.tag-exist{background:#e8e8ec;color:#555}
+.tag-master{background:#fff3d6;color:#8a5b00}
 /* ===== MODAL ===== */
 #qmodal{display:none;position:fixed;inset:0;background:rgba(9,22,44,.55);z-index:50;align-items:center;justify-content:center;padding:16px}
 #qmodal.open{display:flex}
@@ -148,6 +163,7 @@ service cloud.firestore {
   <nav>
     <button class="tab-btn active" data-tab="input">📝 INPUT LAPORAN</button>
     <button class="tab-btn" data-tab="rekap">📋 REKAP LAPORAN</button>
+    <button class="tab-btn" data-tab="antrian">⏳ ANTRIAN DO</button>
     <button class="tab-btn" data-tab="polisi">🚛 MASTER NO POLISI</button>
     <button class="tab-btn" data-tab="tujuan">📍 MASTER TUJUAN</button>
     <button class="tab-btn" data-tab="status">🚦 MASTER STATUS</button>
@@ -198,6 +214,42 @@ service cloud.firestore {
           <button class="btn btn-green" id="btnXlsHarian">⬇ Export Excel Harian (.xlsx)</button>
           <div><label for="rBulan">BULAN (REKAP BULANAN)</label><input type="month" id="rBulan"></div>
           <button class="btn btn-navy" id="btnXlsBulanan">⬇ Export Excel Bulanan (.xlsx)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ANTRIAN DO ============ -->
+    <section class="panel" id="panel-antrian">
+      <div class="card">
+        <h2>⏳ ANTRIAN DO / SHIPMENT <span class="cnt" id="countAntrian">0 unit</span></h2>
+        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup → <b>salin (copy) pesan-pesannya</b> → <b>tempel (paste) di kotak</b> → klik AMBIL NO POLISI → muncul <b>pratinjau centang</b> → SIMPAN. Aturan status: baris ada kata <b>masuk</b> → <b>LOADING</b>; tidak ada kata <b>masuk</b> → <b>ANTRIAN DO</b> (boleh diubah manual di tabel). No polisi yang disimpan otomatis masuk ke <b>Master No Polisi</b> juga — kontraknya diisi menyusul saat input laporan.</p>
+        <div class="row" style="margin-bottom:12px">
+          <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/BEFGPoZY0bGCB8KwEYy7HI?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">💬 Buka Grup WA 1</a>
+          <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/CLRIPktR8dU32jwRl7EqBj?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">💬 Buka Grup WA 2</a>
+        </div>
+        <textarea id="antText" placeholder="Contoh tempelan chat:&#10;B 9526 UPA masuk&#10;B 9120 UYT masuk loading&#10;B 9344 KSA antrian DO 12&#10;B 9777 TRK siap jalan"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button type="button" class="btn btn-navy" id="btnAntAmbil">🔎 AMBIL NO POLISI</button>
+          <button type="button" class="btn btn-ghost" id="btnAntBersih">🧹 Bersihkan Kotak</button>
+        </div>
+        <div id="antPreview"></div>
+        <form id="formAntrianManual" class="row" style="margin-top:14px">
+          <input type="text" id="antManual" placeholder="Tambah manual, contoh: B 9120 UYT">
+          <button type="submit" class="btn btn-blue" id="btnAntManual">➕ Tambah</button>
+        </form>
+        <details style="margin:14px 0">
+          <summary style="cursor:pointer;font-weight:700;color:var(--navy2);font-size:13px">⚡ Trik: masuk otomatis tanpa copy-paste (MacroDroid / Tasker)</summary>
+          <p style="font-size:13px;color:var(--mut);margin-top:8px;line-height:1.6">WhatsApp tidak mengizinkan halaman web membaca isi grup secara langsung, tapi HP Android bisa dibantu aplikasi automasi: pasang <b>MacroDroid</b> atau <b>Tasker</b>, lalu buat aturan "notifikasi WhatsApp masuk → buka alamat" dengan isi:<br><code style="background:var(--sky);padding:2px 6px;border-radius:6px">https://kisah27.github.io/Laporan-harian/?antrian=ISI-PESAN</code><br>Halaman ini otomatis mengambil no polisi dari ISI-PESAN dan memasukkannya ke antrian di bawah — semua perangkat langsung ikut tersinkron.</p>
+        </details>
+        <div class="tblwrap">
+          <table style="min-width:600px">
+            <thead><tr><th>NO</th><th>NO POLISI</th><th>STATUS</th><th>WAKTU MASUK</th><th>SUMBER</th><th>AKSI</th></tr></thead>
+            <tbody id="tbodyAntrian"></tbody>
+          </table>
+        </div>
+        <div class="exportbar">
+          <button class="btn btn-green" id="btnAntWa">📱 Kirim Antrian via WhatsApp</button>
+          <button class="btn btn-red" id="btnAntKosong">🗑️ Kosongkan Antrian</button>
         </div>
       </div>
     </section>
@@ -309,9 +361,9 @@ const KONTRAK_LIST = [
 ];
 const STATUS_DEFAULT = ["KIRIM", "STANDBY", "INAP", "STORING PERBAIKAN"];
 const STATUS_IDS = { "KIRIM":"st-kirim", "STANDBY":"st-standby", "INAP":"st-inap", "STORING PERBAIKAN":"st-storing-perbaikan" };
-const COLS = ["polisi", "tujuan", "status", "laporan"];
+const COLS = ["polisi", "tujuan", "status", "laporan", "antrian"];
 
-const state = { polisi:[], tujuan:[], status:[], laporan:[] };
+const state = { polisi:[], tujuan:[], status:[], laporan:[], antrian:[] };
 let db = null, online = false;
 let editLaporanId = null, editMaster = null, pendingSelect = null, suppressAuto = false;
 let showAll = false, quickType = null;
@@ -352,7 +404,7 @@ async function init() {
   $('rTanggal').value = todayStr();
   $('rBulan').value = todayStr().slice(0, 7);
   bindEvents();
-  if (FORCE_OFFLINE) { goOffline('Mode demo.'); return; }
+  if (FORCE_OFFLINE) { goOffline('Mode demo.'); handleAntrianUrl(); return; }
   try {
     if (typeof firebase === 'undefined') throw { message: 'SDK Firebase gagal dimuat (periksa koneksi internet).' };
     firebase.initializeApp(firebaseConfig);
@@ -366,6 +418,7 @@ async function init() {
     goOffline(errText(e) + ' ');
   }
   renderAll();
+  handleAntrianUrl();
 }
 function seedStatusOnline() {
   const batch = db.batch();
@@ -556,7 +609,7 @@ function renderStatusTable() {
 }
 function renderAll() {
   renderPolisiSelect(); renderTujuanSelect(); renderStatusSelect();
-  renderRekap(); renderPolisiTable(); renderTujuanTable(); renderStatusTable();
+  renderRekap(); renderPolisiTable(); renderTujuanTable(); renderStatusTable(); renderAntrian();
 }
 
 /* ================= AKSI LAPORAN ================= */
@@ -617,14 +670,14 @@ function waOpen(text) { window.open('https://wa.me/?text=' + encodeURIComponent(
 function waRow(id) {
   const r = state.laporan.find(x => x.id === id); if (!r) return;
   const kon = String(r.kontrak || '').replace(/^KONTRAK\s+/i, '');
-  waOpen('```\n🚚 LAPORAN UNIT — SINAR MAJU JAYA\n' +
+  waOpen('🚚 LAPORAN UNIT - SINAR MAJU JAYA\n' +
     '📅 ' + fmtDate(r.tanggal) + '\n' +
-    '🚛 ' + r.polisi + ' | ' + r.status + ' | ' + r.tujuan + ' | ' + kon + '\n```');
+    '🚛 ' + r.polisi + ' - ' + r.status + ' - ' + r.tujuan + (kon ? ' - ' + kon : ''));
 }
 function waRekap() {
   const rows = visibleLaporan();
   if (!rows.length) { alert('Tidak ada data untuk dikirim.'); return; }
-  let t = '```\n🚚 REKAP LAPORAN — SINAR MAJU JAYA\nTHE UNI VENUS SERANG BANTEN\n';
+  let t = '🚚 REKAP LAPORAN - SINAR MAJU JAYA\n';
   if (showAll) {
     const groups = {};
     rows.forEach(r => { (groups[r.tanggal] = groups[r.tanggal] || []).push(r); });
@@ -632,18 +685,196 @@ function waRekap() {
       t += '\n📅 ' + fmtDate(tg) + '\n';
       groups[tg].forEach((r, i) => {
         const kon = String(r.kontrak || '').replace(/^KONTRAK\s+/i, '');
-        t += (i + 1) + '. ' + r.polisi + ' | ' + r.status + ' | ' + r.tujuan + ' | ' + kon + '\n';
+        t += (i + 1) + '. ' + r.polisi + ' - ' + r.status + ' - ' + r.tujuan + (kon ? ' - ' + kon : '') + '\n';
       });
     });
   } else {
     t += '📅 ' + fmtDate($('rTanggal').value) + '\n';
     rows.forEach((r, i) => {
       const kon = String(r.kontrak || '').replace(/^KONTRAK\s+/i, '');
-      t += (i + 1) + '. ' + r.polisi + ' | ' + r.status + ' | ' + r.tujuan + ' | ' + kon + '\n';
+      t += (i + 1) + '. ' + r.polisi + ' - ' + r.status + ' - ' + r.tujuan + (kon ? ' - ' + kon : '') + '\n';
     });
   }
-  t += '📊 Total: ' + rows.length + ' unit\n```';
+  t += 'Total: ' + rows.length + ' unit';
   waOpen(t);
+}
+
+/* ================= ANTRIAN DO ================= */
+const ANT_STATUS = ['ANTRIAN DO', 'LOADING', 'SELESAI MUAT', 'BERANGKAT'];
+let antPreviewItems = [];
+const fmtWaktu = ts => { if (!ts) return '-'; const d = new Date(ts); return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+function antBadge(s) {
+  if (s === 'LOADING') return 'b-amber';
+  if (s === 'SELESAI MUAT') return 'b-blue';
+  if (s === 'BERANGKAT') return 'b-green';
+  return 'b-gray';
+}
+function detectStatusAntrian(line) {
+  const s = ' ' + String(line).toLowerCase() + ' ';
+  return /\bmasuk\b/.test(s) ? 'LOADING' : 'ANTRIAN DO';
+}
+const normPol = v => String(v || '').toUpperCase().replace(/\s+/g, '');
+function extractPolisi(text) {
+  const reFull = /\b([A-Z]{1,2})[\s.\-]*(\d{1,4})[\s.\-]*([A-Z]{1,3})\b/g;
+  const reShort = /\b([A-Z]{1,2})[\s.\-]*(\d{3,4})\b(?!\s?[A-Z])/g;
+  const out = [];
+  String(text || '').split(/\r?\n/).forEach(line => {
+    const up = line.toUpperCase().replace(/\s+/g, ' ');
+    let m, n = 0;
+    while ((m = reFull.exec(up))) {
+      // jangan ambil nomor kontrak (mis. "KONTRAK DO 123 ABC") sebagai no polisi
+      if (/(\bKONTRAK|\bNO\.?\s*DO|\bDO\s*NO)[^A-Z]*$/.test(up.slice(Math.max(0, m.index - 18), m.index))) continue;
+      out.push({ polisi: m[1] + ' ' + m[2] + ' ' + m[3], status: detectStatusAntrian(line) }); n++;
+    }
+    if (!n) { // baris tanpa no polisi lengkap: coba bentuk pendek "B 9526" (chat terpotong baris)
+      while ((m = reShort.exec(up))) out.push({ polisi: m[1] + ' ' + m[2], status: detectStatusAntrian(line) });
+    }
+  });
+  return out;
+}
+async function simpanAntrianList(items, sumber) {
+  const rank = s => ANT_STATUS.indexOf(s);
+  const best = {};
+  items.forEach(f => {
+    const k = normPol(f.polisi); if (!k) return;
+    if (!best[k] || rank(f.status) > rank(best[k].status)) best[k] = f;
+  });
+  let tambah = 0, update = 0, master = 0;
+  try {
+    for (const k of Object.keys(best)) {
+      const f = best[k];
+      const ex = state.antrian.find(a => normPol(a.polisi) === k);
+      if (ex) {
+        if (rank(f.status) > rank(ex.status || 'ANTRIAN DO')) { await updateRec('antrian', ex.id, { status: f.status }); update++; }
+      } else {
+        await addRec('antrian', { polisi: f.polisi, status: f.status, sumber: sumber, tanggal: todayStr() });
+        tambah++;
+      }
+      if (!state.polisi.some(p => normPol(p.polisi) === k)) { await addRec('polisi', { polisi: f.polisi, kontrak: '' }); master++; }
+    }
+  } catch (err) { alert('Gagal menyimpan antrian: ' + errText(err)); return { tambah: 0, update: 0, master: 0 }; }
+  return { tambah, update, master };
+}
+function previewAntrian(text, sumber) {
+  const found = extractPolisi(text);
+  const box = $('antPreview');
+  if (!found.length) {
+    batalPreview();
+    alert('Tidak ada no polisi ditemukan pada teks itu.\nFormat yang dikenali: B 9526 UPA / B9526UPA / B-9526-UPA / B 9526 (tanpa huruf akhir).');
+    return;
+  }
+  antPreviewItems = found;
+  const opts = st => ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
+  box.style.display = 'block';
+  box.innerHTML = '<div class="pv-head">📋 Pratinjau — centang yang mau dimasukkan, atur status bila perlu, lalu klik SIMPAN:</div>' +
+    found.map((f, i) => {
+      const k = normPol(f.polisi);
+      const inAnt = state.antrian.some(a => normPol(a.polisi) === k);
+      const inMaster = state.polisi.some(p => normPol(p.polisi) === k);
+      const tag = !inMaster ? 'MASTER BARU' : (!inAnt ? 'BARU' : 'SUDAH ADA');
+      const cls = !inMaster ? 'tag-master' : (!inAnt ? 'tag-baru' : 'tag-exist');
+      return '<div class="pv-row"><label><input type="checkbox" class="pv-check" checked> <span class="pv-pol">' + esc(f.polisi) + '</span></label>' +
+        '<select class="sel-mini" onchange="antPreviewItems[' + i + '].status = this.value">' + opts(f.status) + '</select>' +
+        '<span class="pv-tag ' + cls + '">' + tag + '</span></div>';
+    }).join('') +
+    '<div class="row" style="margin-top:10px"><button type="button" class="btn btn-green" onclick="simpanPreview()">✔ SIMPAN YANG DICENTANG</button>' +
+    '<button type="button" class="btn btn-ghost" onclick="batalPreview()">✖ Batal</button></div>';
+}
+async function simpanPreview() {
+  const checks = document.querySelectorAll('#antPreview .pv-check');
+  const items = antPreviewItems.filter((f, i) => checks[i] && checks[i].checked);
+  if (!items.length) { alert('Centang dulu minimal satu no polisi.'); return; }
+  const r = await simpanAntrianList(items, 'TEMPEL');
+  batalPreview();
+  $('antText').value = '';
+  showToast('⏳ ' + r.tambah + ' baru, ' + r.update + ' status naik' + (r.master ? ', ' + r.master + ' masuk master' : ''));
+}
+function batalPreview() { antPreviewItems = []; const b = $('antPreview'); if (b) { b.style.display = 'none'; b.innerHTML = ''; } }
+async function ingestAntrian(text, sumber) { // jalur otomatis via URL ?antrian= (tanpa pratinjau)
+  const found = extractPolisi(text);
+  if (!found.length) { showToast('⚠ Pesan otomatis: tidak ada no polisi dikenali'); return; }
+  const r = await simpanAntrianList(found, sumber);
+  showToast('⏳ +' + r.tambah + ' antrian, ' + r.update + ' status naik' + (r.master ? ', +' + r.master + ' master' : ''));
+}
+async function submitAntrianManual(e) {
+  e.preventDefault();
+  const pol = $('antManual').value.trim().toUpperCase().replace(/\s+/g, ' ');
+  if (!pol) return;
+  const key = pol.replace(/\s+/g, '');
+  if (state.antrian.some(a => normPol(a.polisi) === key)) { alert(pol + ' sudah ada di antrian!'); return; }
+  try {
+    await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', sumber: 'MANUAL', tanggal: todayStr() });
+    if (!state.polisi.some(p => normPol(p.polisi) === key)) await addRec('polisi', { polisi: pol, kontrak: '' });
+  }
+  catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
+  $('antManual').value = '';
+  showToast('⏳ ' + pol + ' masuk antrian — kontrak diisi nanti di master/input');
+}
+function renderAntrian() {
+  const arr = state.antrian.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  $('countAntrian').textContent = arr.length + ' unit';
+  const tb = $('tbodyAntrian');
+  if (!arr.length) {
+    tb.innerHTML = '<tr class="empty"><td colspan="6">Antrian kosong. Tempel chat WhatsApp di atas → AMBIL NO POLISI → centang → SIMPAN.</td></tr>';
+    return;
+  }
+  tb.innerHTML = arr.map((r, i) => {
+    const st = ANT_STATUS.indexOf(r.status) > -1 ? r.status : 'ANTRIAN DO';
+    const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
+    return '<tr><td>' + (i + 1) + '</td>' +
+      '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
+      '<td><select class="sel-mini" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
+      '<td class="nowrap">' + fmtWaktu(r.createdAt) + '</td>' +
+      '<td>' + esc(r.sumber || '-') + '</td>' +
+      '<td><div class="aksi">' +
+      '<button class="btn mini btn-blue" title="Buat laporan dari antrian" onclick="buatLaporanDariAntrian(\'' + r.id + '\')">📝</button>' +
+      '<button class="btn mini btn-red" title="Hapus" onclick="hapusAntrian(\'' + r.id + '\')">🗑️</button>' +
+      '</div></td></tr>';
+  }).join('');
+}
+async function setStatusAntrian(id, status) {
+  try { await updateRec('antrian', id, { status: status }); showToast('✔ Status antrian diubah: ' + status); }
+  catch (err) { alert('Gagal mengubah status: ' + errText(err)); }
+}
+async function hapusAntrian(id) {
+  const r = state.antrian.find(x => x.id === id); if (!r) return;
+  if (!confirm('Hapus ' + r.polisi + ' dari antrian?')) return;
+  try { await deleteRec('antrian', id); showToast('🗑️ Antrian dihapus'); }
+  catch (err) { alert('Gagal menghapus: ' + errText(err)); }
+}
+async function kosongkanAntrian() {
+  if (!state.antrian.length) { alert('Antrian sudah kosong.'); return; }
+  if (!confirm('Kosongkan SEMUA antrian (' + state.antrian.length + ' unit)?')) return;
+  try { for (const a of state.antrian.slice()) await deleteRec('antrian', a.id); showToast('🗑️ Antrian dikosongkan'); }
+  catch (err) { alert('Gagal mengosongkan: ' + errText(err)); }
+}
+function buatLaporanDariAntrian(id) {
+  const r = state.antrian.find(x => x.id === id); if (!r) return;
+  setTab('input');
+  suppressAuto = true;
+  $('fTanggal').value = todayStr();
+  ensureOption($('fPolisi'), r.polisi); $('fPolisi').value = r.polisi;
+  suppressAuto = false;
+  onPolisiChange();
+  $('panel-input').scrollIntoView({ behavior: 'smooth' });
+  showToast('📝 ' + r.polisi + ' siap dilaporkan — lengkapi tujuan lalu simpan');
+}
+function waAntrian() {
+  const arr = state.antrian.slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  if (!arr.length) { alert('Antrian masih kosong.'); return; }
+  let t = '⏳ ANTRIAN DO - SINAR MAJU JAYA\n';
+  arr.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
+  t += 'Total: ' + arr.length + ' unit';
+  waOpen(t);
+}
+function handleAntrianUrl() {
+  try {
+    const txt = new URLSearchParams(location.search).get('antrian');
+    if (!txt) return;
+    history.replaceState(null, '', location.pathname + location.hash);
+    setTab('antrian');
+    setTimeout(() => ingestAntrian(txt, 'WA-AUTO'), 1500);
+  } catch (e) {}
 }
 
 /* ================= EXPORT EXCEL ================= */
@@ -840,9 +1071,14 @@ function bindEvents() {
   $('qmForm').addEventListener('submit', submitQuick);
   $('qmCancel').addEventListener('click', closeQuick);
   $('qmodal').addEventListener('click', e => { if (e.target === $('qmodal')) closeQuick(); });
+  $('btnAntAmbil').addEventListener('click', () => previewAntrian($('antText').value, 'TEMPEL'));
+  $('btnAntBersih').addEventListener('click', () => { $('antText').value = ''; });
+  $('btnAntWa').addEventListener('click', waAntrian);
+  $('btnAntKosong').addEventListener('click', kosongkanAntrian);
+  $('formAntrianManual').addEventListener('submit', submitAntrianManual);
 }
 
 init();
 </script>
 </body>
-                                       </html>
+  </html>
