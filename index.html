@@ -617,32 +617,32 @@ function waOpen(text) { window.open('https://wa.me/?text=' + encodeURIComponent(
 function waRow(id) {
   const r = state.laporan.find(x => x.id === id); if (!r) return;
   const kon = String(r.kontrak || '').replace(/^KONTRAK\s+/i, '');
-  waOpen('🚚 *LAPORAN UNIT* — SINAR MAJU JAYA\n' +
+  waOpen('```\n🚚 LAPORAN UNIT — SINAR MAJU JAYA\n' +
     '📅 ' + fmtDate(r.tanggal) + '\n' +
-    '🚛 *' + r.polisi + '* | ' + r.status + ' | ' + r.tujuan + ' | _' + kon + '_');
+    '🚛 ' + r.polisi + ' | ' + r.status + ' | ' + r.tujuan + ' | ' + kon + '\n```');
 }
 function waRekap() {
   const rows = visibleLaporan();
   if (!rows.length) { alert('Tidak ada data untuk dikirim.'); return; }
-  let t = '🚚 *REKAP LAPORAN* — SINAR MAJU JAYA\n_THE UNI VENUS SERANG BANTEN_\n';
+  let t = '```\n🚚 REKAP LAPORAN — SINAR MAJU JAYA\nTHE UNI VENUS SERANG BANTEN\n';
   if (showAll) {
     const groups = {};
     rows.forEach(r => { (groups[r.tanggal] = groups[r.tanggal] || []).push(r); });
     Object.keys(groups).sort().forEach(tg => {
-      t += '\n📅 *' + fmtDate(tg) + '*\n';
+      t += '\n📅 ' + fmtDate(tg) + '\n';
       groups[tg].forEach((r, i) => {
         const kon = String(r.kontrak || '').replace(/^KONTRAK\s+/i, '');
-        t += (i + 1) + '. *' + r.polisi + '* | ' + r.status + ' | ' + r.tujuan + ' | _' + kon + '_\n';
+        t += (i + 1) + '. ' + r.polisi + ' | ' + r.status + ' | ' + r.tujuan + ' | ' + kon + '\n';
       });
     });
   } else {
-    t += '📅 *' + fmtDate($('rTanggal').value) + '*\n';
+    t += '📅 ' + fmtDate($('rTanggal').value) + '\n';
     rows.forEach((r, i) => {
       const kon = String(r.kontrak || '').replace(/^KONTRAK\s+/i, '');
-      t += (i + 1) + '. *' + r.polisi + '* | ' + r.status + ' | ' + r.tujuan + ' | _' + kon + '_\n';
+      t += (i + 1) + '. ' + r.polisi + ' | ' + r.status + ' | ' + r.tujuan + ' | ' + kon + '\n';
     });
   }
-  t += '📊 Total: *' + rows.length + '* unit';
+  t += '📊 Total: ' + rows.length + ' unit\n```';
   waOpen(t);
 }
 
@@ -845,4 +845,4 @@ function bindEvents() {
 init();
 </script>
 </body>
-</html>
+                                       </html>
