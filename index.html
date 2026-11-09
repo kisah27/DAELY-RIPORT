@@ -1,115 +1,848 @@
-=====================================================
-PANDUAN PASANG DAELY-RIPORT DI GITHUB
-=====================================================
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b2e59">
+<title>DAELY-RIPORT SINAR MAJU JAYA</title>
+<style>
+:root{
+  --navy:#0b2e59; --navy2:#14477e; --blue:#2563eb; --sky:#eaf2fb;
+  --line:#d5e2f2; --bg:#eef2f8; --text:#1f2a3d; --mut:#5b6b82;
+  --green:#157347; --green-bg:#e6f4ec; --amber:#b45309; --amber-bg:#fdf3e3;
+  --red:#b3261e; --red-bg:#fdecea; --purple:#5b21b6; --purple-bg:#f1e9fd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#e8eef7 0%,#f4f7fb 320px);color:var(--text);min-height:100vh;padding:14px}
+.container{max-width:1000px;margin:0 auto}
+/* ===== HEADER ===== */
+header{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 20px rgba(11,46,89,.08);padding:26px 18px 18px;text-align:center;position:relative;overflow:hidden}
+header::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--navy))}
+header h1{color:var(--navy);font-size:clamp(22px,4.6vw,34px);font-weight:800;letter-spacing:1px}
+header .sub{color:var(--navy2);font-size:clamp(11px,2.2vw,15px);font-weight:600;letter-spacing:3px;margin-top:7px}
+header .truck{font-size:26px;margin-bottom:6px}
+#syncStatus{display:inline-flex;align-items:center;gap:7px;margin-top:12px;background:var(--sky);border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:600;color:var(--navy2)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.dot.on{background:#1e9e4a;box-shadow:0 0 0 3px rgba(30,158,74,.2)}
+.dot.off{background:#e8a100;box-shadow:0 0 0 3px rgba(232,161,0,.2)}
+/* ===== BANNER ===== */
+#offlineBanner{display:none;background:var(--amber-bg);border:1px solid #f0d9ae;border-radius:12px;padding:12px 14px;margin-top:12px;font-size:13px;color:#7a4d06}
+#offlineBanner b{display:block;margin-bottom:4px}
+#offlineBanner ol{margin:6px 0 0 18px;line-height:1.55}
+#offlineBanner code{background:#fff;border:1px solid #ecd9b0;border-radius:4px;padding:0 4px;font-size:12px}
+/* ===== NAV ===== */
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;justify-content:center}
+.tab-btn{border:1px solid var(--line);background:#fff;color:var(--navy);font-weight:700;font-size:13px;padding:9px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+.tab-btn:hover{border-color:var(--blue);color:var(--blue)}
+.tab-btn.active{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:0 4px 12px rgba(11,46,89,.25)}
+/* ===== PANELS / CARDS ===== */
+main{margin-top:16px}
+.panel{display:none}
+.panel.show{display:block}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 14px rgba(11,46,89,.06);padding:20px 18px;margin-bottom:16px}
+.card h2{color:var(--navy);font-size:18px;margin-bottom:2px}
+.card .desc{color:var(--mut);font-size:13px;margin-bottom:16px}
+h2 .cnt{font-size:13px;color:#fff;background:var(--blue);border-radius:999px;padding:2px 10px;vertical-align:middle;margin-left:6px}
+/* ===== FORMS ===== */
+.form-col{display:flex;flex-direction:column;gap:13px;max-width:540px;margin:0 auto}
+label{font-size:12.5px;font-weight:700;color:var(--navy);letter-spacing:.4px;margin-bottom:-7px}
+input[type=text],input[type=date],input[type=month],select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#fbfdff;color:var(--text);outline:none;font-family:inherit}
+input:focus,select:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1;min-width:130px}
+.row .btn{flex:0 0 auto;min-width:0}
+/* ===== BUTTONS ===== */
+.btn{border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;color:#fff}
+.btn:active{transform:scale(.97)}
+.btn-navy{background:var(--navy)} .btn-navy:hover{background:var(--navy2)}
+.btn-blue{background:var(--blue)} .btn-blue:hover{background:#1d4fd8}
+.btn-green{background:var(--green)} .btn-green:hover{background:#0f5c38}
+.btn-red{background:var(--red)} .btn-red:hover{background:#921c15}
+.btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn.big{width:100%;padding:13px;font-size:15px}
+.btn.mini{padding:6px 9px;font-size:13px;border-radius:8px}
+/* ===== STATS CHIPS ===== */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;border:1px solid}
+.c-navy{background:var(--sky);border-color:#c3d8f2;color:var(--navy)}
+.c-green{background:var(--green-bg);border-color:#bfe3cd;color:var(--green)}
+.c-amber{background:var(--amber-bg);border-color:#f0d9ae;color:var(--amber)}
+.c-blue{background:#e9e6fb;border-color:#d4cdf4;color:var(--purple)}
+.c-red{background:var(--red-bg);border-color:#f3c4c0;color:var(--red)}
+/* ===== TABLES ===== */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:660px;font-size:13.5px}
+thead th{background:linear-gradient(180deg,var(--navy),var(--navy2));color:#fff;padding:11px 10px;text-align:left;font-size:12px;letter-spacing:.6px;white-space:nowrap}
+tbody td{padding:10px;border-top:1px solid var(--line);vertical-align:middle}
+tbody tr:nth-child(even){background:#f4f8fd}
+tbody tr:hover{background:var(--sky)}
+tbody tr.empty td{text-align:center;color:var(--mut);padding:26px 10px}
+.badge{padding:3px 11px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.3px;white-space:nowrap;display:inline-block}
+.b-green{background:var(--green-bg);color:var(--green)} .b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-blue{background:#e9e6fb;color:var(--purple)} .b-red{background:var(--red-bg);color:var(--red)}
+.b-gray{background:#eef1f5;color:var(--mut)}
+.aksi{display:flex;gap:6px;flex-wrap:nowrap}
+td.nowrap{white-space:nowrap}
+.kontrak-cell{font-size:12px;color:var(--mut)}
+/* ===== FILTER BAR ===== */
+.filterbar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:14px}
+.filterbar>div{display:flex;flex-direction:column;gap:5px}
+.filterbar label{margin-bottom:0}
+.filterbar input{width:auto;min-width:160px}
+/* ===== EXPORT BAR ===== */
+.exportbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:end}
+.exportbar>div{display:flex;flex-direction:column;gap:5px}
+/* ===== MODAL ===== */
+#qmodal{display:none;position:fixed;inset:0;background:rgba(9,22,44,.55);z-index:50;align-items:center;justify-content:center;padding:16px}
+#qmodal.open{display:flex}
+#qmCard{background:#fff;border-radius:16px;max-width:380px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+#qmCard h3{color:var(--navy);font-size:17px;margin-bottom:14px}
+#qmCard .form-col{max-width:none}
+/* ===== TOAST ===== */
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:60;box-shadow:0 10px 30px rgba(11,46,89,.4);max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:10px 0 24px;letter-spacing:1px}
+@media(max-width:600px){body{padding:10px}.card{padding:16px 13px}header{padding:20px 12px 14px}}
+</style>
+</head>
+<body>
+<div class="container">
 
-A. CARA MEMASANG (COPY HTML KE GITHUB)
------------------------------------------------------
-1. Buka file DAELY-RIPORT.html (pakai Notepad / editor teks),
-   lalu SALIN SELURUH ISINYA (Ctrl+A, Ctrl+C).
-2. Buka https://github.com -> login -> klik tombol "+" (kanan atas)
-   -> "New repository".
-   - Repository name: daely-riport (atau bebas)
-   - Pilih Public
-   - Klik "Create repository"
-3. Di halaman repo, klik "creating a new file" atau tombol
-   "Add file -> Create new file".
-   - Nama file wajib: index.html
-   - Tempel (Ctrl+V) seluruh kode HTML ke kotak besar.
-4. Klik "Commit changes".
-5. Aktifkan halaman web:
-   Settings -> (kiri) Pages -> Branch: pilih "main" + "/ (root)"
-   -> Save. Tunggu 1-2 menit.
-6. Aplikasi online di alamat:
-   https://NAMA-USER-GITHUB.github.io/daely-riport/
-   Bagikan alamat itu ke semua orang. Bisa dibuka di HP.
+  <header>
+    <div class="truck">🚛</div>
+    <h1>DAELY-RIPORT SINAR MAJU JAYA</h1>
+    <div class="sub">THE UNI VENUS SERANG BANTEN</div>
+    <div id="syncStatus"><span class="dot off" id="syncDot"></span><span id="syncText">Menghubungkan…</span></div>
+  </header>
 
-TIP: kalau nanti ingin mengubah kode, buka index.html di repo ->
-ikonen pensil (Edit) -> ubah -> Commit. Setiap orang otomatis
-dapat versi terbaru setelah refresh halaman.
+  <div id="offlineBanner">
+    <b>⚠ Mode Lokal — data hanya tersimpan di perangkat ini.</b>
+    <span id="offlineReason"></span>
+    Agar data otomatis sama di semua orang (HP / laptop), aktifkan Firebase Firestore:
+    <ol>
+      <li>Buka <b>console.firebase.google.com</b> → proyek <b>dealy-riport</b></li>
+      <li>Menu <b>Build → Firestore Database → Create database</b> (pilih <i>Start in production mode</i>, lokasi bebas, mis. singapore)</li>
+      <li style="background:#fdecec;border-left:4px solid #c0392b;padding:8px 10px;list-style:none;margin-left:-24px;margin-bottom:8px;border-radius:6px;">
+        <b style="color:#c0392b;">PENTING: pilih menu yang bertuliskan "Firestore Database", BUKAN "Realtime Database".</b><br>
+        Cek judul besar di atas halaman setelah masuk: harus tertulis <b>Firestore Database</b>.
+        Kalau tertulis <b>Realtime Database</b>, itu menu yang salah — rules di bawah akan gagal
+        dengan tulisan merah <i>"Parse error"</i> seperti yang terjadi sebelumnya. Kembali ke menu ☰ lalu pilih Firestore Database.
+      </li>
+      <li>Tab <b>Rules</b> → hapus semua isinya → ganti menjadi (boleh di-copy persis):</li>
+    </ol>
+    <pre style="background:#0f2b46;color:#d5e6f7;padding:10px;border-radius:8px;overflow-x:auto;font-size:11px;line-height:1.5;">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</pre>
+    <p style="margin:8px 0;">lalu klik tombol <b>Publish</b> yang berada di kanan atas area rules.</p>
+    <ol start="5">
+      <li>Refresh halaman ini — tulisan akan berubah jadi <b>🟢 Terhubung</b></li>
+    </ol>
+  </div>
 
-B. WAJIB: AKTIFKAN FIRESTORE AGAR DATA SAMA DI SEMUA ORANG
------------------------------------------------------
-Sampai langkah ini dilakukan, aplikasi tetap jalan tetapi
-bertulisan "Mode Lokal" (data hanya tersimpan di HP/laptop
-masing-masing). Setelah diaktifkan, tulisan berubah menjadi
-"Terhubung Firebase" dan semua input pengurus otomatis muncul
-di HP semua orang dalam hitungan detik.
+  <nav>
+    <button class="tab-btn active" data-tab="input">📝 INPUT LAPORAN</button>
+    <button class="tab-btn" data-tab="rekap">📋 REKAP LAPORAN</button>
+    <button class="tab-btn" data-tab="polisi">🚛 MASTER NO POLISI</button>
+    <button class="tab-btn" data-tab="tujuan">📍 MASTER TUJUAN</button>
+    <button class="tab-btn" data-tab="status">🚦 MASTER STATUS</button>
+  </nav>
 
-1. Buka https://console.firebase.google.com -> pilih project
-   "dealy-riport".
-2. Menu kiri: Build -> Firestore Database -> tombol "Create
-   database".
+  <main>
+    <!-- ============ INPUT ============ -->
+    <section class="panel show" id="panel-input">
+      <div class="card">
+        <h2>📝 INPUT LAPORAN</h2>
+        <p class="desc">Isi data laporan unit. KONTRAK &amp; STATUS terisi otomatis setelah NO POLISI dipilih. Data langsung tersinkron ke semua perangkat.</p>
+        <form id="formLaporan" class="form-col" autocomplete="off">
+          <label for="fTanggal">TANGGAL</label>
+          <input type="date" id="fTanggal" required>
+          <label for="fPolisi">NO POLISI</label>
+          <select id="fPolisi" required></select>
+          <label for="fKontrak">KONTRAK <span style="color:var(--mut);font-weight:500">(otomatis)</span></label>
+          <select id="fKontrak" required></select>
+          <label for="fTujuan">TUJUAN</label>
+          <select id="fTujuan" required></select>
+          <label for="fStatus">STATUS</label>
+          <select id="fStatus" required></select>
+          <button type="submit" class="btn btn-navy big" id="btnSimpan">💾 SIMPAN LAPORAN</button>
+          <button type="button" class="btn btn-ghost big" id="btnBatalEdit" style="display:none">✖ BATAL EDIT</button>
+        </form>
+      </div>
+    </section>
 
-   PENTING: pilih menu yang bertuliskan "FIRESTORE DATABASE",
-   BUKAN "REALTIME DATABASE". Dua menu ini mirip nama dan
-   letaknya berdampingan, tetapi produknya berbeda. Cek judul
-   besar di atas halaman: harus tertulis "Firestore Database".
-   Kalau tertulis "Realtime Database" (mis. muncul error merah
-   "Error saving rules - Parse error"), berarti salah masuk
-   menu -- kembali ke menu utama dan pilih Firestore Database.
+    <!-- ============ REKAP ============ -->
+    <section class="panel" id="panel-rekap">
+      <div class="card">
+        <h2>📋 REKAP LAPORAN <span class="cnt" id="rekapCount">0 data</span></h2>
+        <p class="desc">Rekap tersimpan permanen di database. Setiap baris bisa dikirim via WhatsApp, diedit, atau dihapus.</p>
+        <div class="chips" id="statsRow"></div>
+        <div class="filterbar">
+          <div><label for="rTanggal">TANGGAL</label><input type="date" id="rTanggal"></div>
+          <button class="btn btn-blue" id="btnShowAll">📋 Tampilkan Semua</button>
+          <button class="btn btn-ghost" id="btnToday">📅 Hari Ini</button>
+          <button class="btn btn-green" id="btnWaRekap">📱 Kirim Rekap via WhatsApp</button>
+        </div>
+        <div class="tblwrap">
+          <table>
+            <thead><tr><th>NO</th><th>TANGGAL</th><th>NO POLISI</th><th>KONTRAK</th><th>TUJUAN</th><th>STATUS</th><th>AKSI</th></tr></thead>
+            <tbody id="tbodyRekap"></tbody>
+          </table>
+        </div>
+        <div class="exportbar">
+          <button class="btn btn-green" id="btnXlsHarian">⬇ Export Excel Harian (.xlsx)</button>
+          <div><label for="rBulan">BULAN (REKAP BULANAN)</label><input type="month" id="rBulan"></div>
+          <button class="btn btn-navy" id="btnXlsBulanan">⬇ Export Excel Bulanan (.xlsx)</button>
+        </div>
+      </div>
+    </section>
 
-3. Pilih "Start in production mode" -> lokasi bebas (mis.
-   asia-southeast1 / singapore) -> Enable.
-4. Masih di Firestore, buka tab "Rules", hapus semua isinya,
-   ganti menjadi (versi 2, standar Firebase sekarang):
+    <!-- ============ MASTER NO POLISI ============ -->
+    <section class="panel" id="panel-polisi">
+      <div class="card">
+        <h2>🚛 MASTER NO POLISI <span class="cnt" id="countPolisi">0</span></h2>
+        <p class="desc">Daftar nomor polisi + kontraknya. Otomatis dipakai sebagai dropdown di Input Laporan. No polisi baru yang ditambah lewat Input Laporan juga masuk ke sini otomatis.</p>
+        <form id="formPolisi" class="row" style="margin-bottom:14px">
+          <input type="text" id="mpPolisi" placeholder="Contoh: B 9120 UYT" required>
+          <select id="mpKontrak" required></select>
+          <button type="submit" class="btn btn-navy" id="btnMpAdd">➕ Tambah</button>
+        </form>
+        <div class="tblwrap">
+          <table>
+            <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>AKSI</th></tr></thead>
+            <tbody id="tbodyPolisi"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /{document=**} {
-         allow read, write: if true;
-       }
-     }
-   }
+    <!-- ============ MASTER TUJUAN ============ -->
+    <section class="panel" id="panel-tujuan">
+      <div class="card">
+        <h2>📍 MASTER TUJUAN <span class="cnt" id="countTujuan">0</span></h2>
+        <p class="desc">Daftar tujuan pengiriman. Otomatis dipakai sebagai dropdown di Input Laporan. Tujuan baru yang ditambah lewat Input Laporan juga masuk ke sini otomatis.</p>
+        <form id="formTujuan" class="row" style="margin-bottom:14px">
+          <input type="text" id="mtNama" placeholder="Contoh: CILACAP" required>
+          <button type="submit" class="btn btn-navy" id="btnMtAdd">➕ Tambah</button>
+        </form>
+        <div class="tblwrap">
+          <table>
+            <thead><tr><th>NO</th><th>TUJUAN</th><th>AKSI</th></tr></thead>
+            <tbody id="tbodyTujuan"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-   lalu klik "Publish".
-5. Buka aplikasi DAELY-RIPORT, refresh halaman. Indikator di
-   bawah judul harus berubah jadi: "Terhubung Firebase".
+    <!-- ============ MASTER STATUS ============ -->
+    <section class="panel" id="panel-status">
+      <div class="card">
+        <h2>🚦 MASTER STATUS <span class="cnt" id="countStatus">0</span></h2>
+        <p class="desc">Daftar status unit untuk dropdown. Berisi bawaan: KIRIM, STANDBY, INAP, STORING PERBAIKAN. Saat NO POLISI dipilih di Input Laporan, STATUS otomatis mengikuti status terakhir unit tersebut.</p>
+        <form id="formStatus" class="row" style="margin-bottom:14px">
+          <input type="text" id="msNama" placeholder="Contoh: KIRIM" required>
+          <button type="submit" class="btn btn-navy" id="btnMsAdd">➕ Tambah</button>
+        </form>
+        <div class="tblwrap">
+          <table>
+            <thead><tr><th>NO</th><th>STATUS</th><th>AKSI</th></tr></thead>
+            <tbody id="tbodyStatus"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
 
-Catatan keamanan: rules di atas terbuka untuk semua orang
-(sesuai permintaan "dapat dipakai semua orang"). Siapa pun yang
-punya link bisa menambah/mengubah data. Jika suatu hari ingin
-lebih aman, bisa ditambahkan login, tapi datanya harus tetap
-sama untuk semua pengguna.
+  <footer>DAELY-RIPORT • SINAR MAJU JAYA • THE UNI VENUS SERANG BANTEN</footer>
+</div>
 
-C. CARA PAKAI SINGKAT
------------------------------------------------------
-INPUT LAPORAN
-- TANGGAL: terisi hari ini otomatis; klik kolomnya untuk
-  membuka kalender.
-- NO POLISI: pilih dari dropdown. Pilihan diambil dari
-  MASTER NO POLISI. Pilih "Tambah No Polisi Baru" bila unit
-  belum terdaftar -> langsung tersimpan ke master.
-- KONTRAK: terisi OTOMATIS mengikuti kontrak no polisi.
-- TUJUAN: dropdown dari MASTER TUJUAN (bisa tambah baru).
-- STATUS: dropdown (KIRIM / STANDBY / INAP / STORING
-  PERBAIKAN). Saat no polisi dipilih, status otomatis mengikuti
-  status terakhir unit tersebut; boleh diubah manual.
-- SIMPAN: data langsung masuk REKAP dan tersinkron ke semua
-  perangkat.
+<!-- ============ MODAL TAMBAH CEPAT ============ -->
+<div id="qmodal">
+  <div id="qmCard">
+    <h3 id="qmTitle">Tambah Baru</h3>
+    <form id="qmForm" class="form-col">
+      <label for="qmText" id="qmLabel">NAMA</label>
+      <input type="text" id="qmText" required>
+      <div id="qmKontrakWrap" style="display:none">
+        <label for="qmKontrak">KONTRAK</label>
+        <select id="qmKontrak" required></select>
+      </div>
+      <div class="row">
+        <button type="button" class="btn btn-ghost" id="qmCancel">Batal</button>
+        <button type="submit" class="btn btn-navy" id="qmOk">💾 Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-REKAP LAPORAN
-- Default menampilkan laporan hari ini; tombol "Tampilkan
-  Semua" untuk melihat seluruh riwayat, "Hari Ini" untuk
-  kembali.
-- Setiap baris ada tombol: WhatsApp (kirim 1 laporan),
-  Edit, dan Hapus.
-- "Kirim Rekap via WhatsApp": mengirim seluruh isi rekap yang
-  sedang tampil (WhatsApp akan membuka pilihan kontak/group).
-- "Export Excel Harian": unduh .xlsx sesuai filter tanggal.
-- "Export Excel Bulanan": pilih bulan dulu, lalu unduh .xlsx
-  berisi 2 sheet: Laporan + Rekap Per Unit. Data bulanan aman
-  karena tersimpan di database (tidak hilang ganti tanggal).
+<div id="toast"></div>
 
-MASTER (NO POLISI / TUJUAN / STATUS)
-- Tambah lewat form di atas tabel, Edit/Hapus di kolom AKSI.
-- Semua isian master otomatis dipakai sebagai dropdown di
-  Input Laporan.
-- MASTER STATUS berisi 4 pilihan bawaan: KIRIM, STANDBY, INAP,
-  STORING PERBAIKAN (boleh ditambah/diedit/dihapus).
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+'use strict';
+/* ================= KONFIGURASI ================= */
+const FORCE_OFFLINE = false; // true = paksa mode lokal (tanpa Firebase)
 
-D. FILE
------------------------------------------------------
-- DAELY-RIPORT.html  -> kode yang di-paste ke GitHub (index.html)
-- PANDUAN ini        -> disimpan sebagai teks
-=====================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCBDN225mDRk_DmdWNcfcyeKFzv4hGmtDE",
+  authDomain: "dealy-riport.firebaseapp.com",
+  projectId: "dealy-riport",
+  storageBucket: "dealy-riport.firebasestorage.app",
+  messagingSenderId: "144889126451",
+  appId: "1:144889126451:web:8675929e6e9c4947eb4d46",
+  measurementId: "G-GQLHBGLYHF"
+};
+
+const KONTRAK_LIST = [
+  "KONTRAK MIL/WING BOX",
+  "KONTRAK MIL/FUSO LONG",
+  "KONTRAK SDD/WING BOX",
+  "KONTRAK SDD/CDE",
+  "KONTRAK SDD/CDD"
+];
+const STATUS_DEFAULT = ["KIRIM", "STANDBY", "INAP", "STORING PERBAIKAN"];
+const STATUS_IDS = { "KIRIM":"st-kirim", "STANDBY":"st-standby", "INAP":"st-inap", "STORING PERBAIKAN":"st-storing-perbaikan" };
+const COLS = ["polisi", "tujuan", "status", "laporan"];
+
+const state = { polisi:[], tujuan:[], status:[], laporan:[] };
+let db = null, online = false;
+let editLaporanId = null, editMaster = null, pendingSelect = null, suppressAuto = false;
+let showAll = false, quickType = null;
+
+/* ================= UTIL ================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); };
+const fmtDate = s => { if (!s) return ''; const p = String(s).split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : s; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const lsKey = c => 'dealy_' + c;
+const lsAll = c => { try { return JSON.parse(localStorage.getItem(lsKey(c)) || '[]'); } catch(e) { return []; } };
+const lsSave = (c, v) => { try { localStorage.setItem(lsKey(c), JSON.stringify(v)); } catch(e) {} };
+const sortName = (arr, key) => arr.slice().sort((a,b) => String(a[key]||'').localeCompare(String(b[key]||''), 'id'));
+const sortLaporan = arr => arr.slice().sort((a,b) => (b.tanggal||'').localeCompare(a.tanggal||'') || (b.createdAt||0) - (a.createdAt||0));
+const errText = e => {
+  const code = e && e.code ? e.code : '';
+  if (code === 'permission-denied') return 'Firestore menolak akses (Rules belum dibuka).';
+  if (code === 'failed-precondition' || code === 'not-found') return 'Firestore Database belum dibuat di project ini.';
+  if (code.indexOf('unavailable') > -1 || code.indexOf('network') > -1) return 'Tidak ada koneksi ke server Firebase.';
+  return (e && e.message) ? e.message : 'Gagal terhubung ke Firebase.';
+};
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(showToast._tm); showToast._tm = setTimeout(() => t.classList.remove('show'), 2400);
+}
+function ensureOption(sel, val) {
+  if (!val) return;
+  for (const o of sel.options) if (o.value === val) return;
+  const op = document.createElement('option'); op.value = val; op.textContent = val; sel.appendChild(op);
+}
+
+/* ================= FIREBASE / STORAGE ================= */
+async function init() {
+  fillKontrakSelects();
+  $('fTanggal').value = todayStr();
+  $('rTanggal').value = todayStr();
+  $('rBulan').value = todayStr().slice(0, 7);
+  bindEvents();
+  if (FORCE_OFFLINE) { goOffline('Mode demo.'); return; }
+  try {
+    if (typeof firebase === 'undefined') throw { message: 'SDK Firebase gagal dimuat (periksa koneksi internet).' };
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    const timeout = new Promise((_, rej) => setTimeout(() => rej({ code: 'unavailable' }), 9000));
+    const snap = await Promise.race([db.collection('status').limit(1).get(), timeout]);
+    online = true; setSync(true);
+    if (snap.empty) await seedStatusOnline();
+    subscribeAll();
+  } catch (e) {
+    goOffline(errText(e) + ' ');
+  }
+  renderAll();
+}
+function seedStatusOnline() {
+  const batch = db.batch();
+  STATUS_DEFAULT.forEach(n => batch.set(db.collection('status').doc(STATUS_IDS[n]), { nama: n, createdAt: Date.now() }));
+  return batch.commit().catch(() => {});
+}
+function seedStatusLocal() {
+  if (state.status.length === 0) {
+    state.status = STATUS_DEFAULT.map(n => ({ id: STATUS_IDS[n], nama: n, createdAt: Date.now() }));
+    lsSave('status', state.status);
+  }
+}
+function subscribeAll() {
+  COLS.forEach(col => {
+    const unsub = db.collection(col).onSnapshot(snap => {
+      state[col] = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      renderAll();
+    }, err => goOffline(errText(err) + ' '));
+  });
+}
+function goOffline(reason) {
+  if (online) COLS.forEach(c => lsSave(c, state[c])); // simpan data yang sudah termuat
+  online = false; db = null;
+  COLS.forEach(c => { state[c] = lsAll(c); });
+  seedStatusLocal();
+  setSync(false, reason);
+  renderAll();
+}
+function setSync(isOnline, reason) {
+  $('syncDot').className = 'dot ' + (isOnline ? 'on' : 'off');
+  $('syncText').textContent = isOnline
+    ? 'Terhubung Firebase — data sinkron otomatis ke semua orang'
+    : 'Mode Lokal (data di perangkat ini saja)';
+  $('offlineBanner').style.display = isOnline ? 'none' : 'block';
+  if (reason) $('offlineReason').textContent = '(' + reason.trim() + ') ';
+}
+async function addRec(col, data) {
+  const rec = Object.assign({}, data, { createdAt: Date.now() });
+  if (online) { await db.collection(col).add(rec); }
+  else { const a = lsAll(col); rec.id = uid(); a.push(rec); lsSave(col, a); state[col] = a; renderAll(); }
+}
+async function updateRec(col, id, data) {
+  if (online) { await db.collection(col).doc(id).update(data); }
+  else {
+    const a = lsAll(col); const i = a.findIndex(x => x.id === id);
+    if (i > -1) { a[i] = Object.assign({}, a[i], data); lsSave(col, a); state[col] = a; renderAll(); }
+  }
+}
+async function deleteRec(col, id) {
+  if (online) { await db.collection(col).doc(id).delete(); }
+  else { const a = lsAll(col).filter(x => x.id !== id); lsSave(col, a); state[col] = a; renderAll(); }
+}
+
+/* ================= DROPDOWN ================= */
+function fillKontrakSelects() {
+  ['fKontrak', 'mpKontrak', 'qmKontrak'].forEach(id => {
+    const sel = $(id); let html = '<option value="">— Pilih Kontrak —</option>';
+    KONTRAK_LIST.forEach(k => html += '<option value="' + esc(k) + '">' + esc(k) + '</option>');
+    sel.innerHTML = html;
+  });
+}
+function renderPolisiSelect() {
+  const sel = $('fPolisi'); const cur = sel.value;
+  let html = '<option value="">— Pilih No Polisi —</option>';
+  sortName(state.polisi, 'polisi').forEach(p => html += '<option value="' + esc(p.polisi) + '">' + esc(p.polisi) + '</option>');
+  html += '<option value="__add__">➕ Tambah No Polisi Baru…</option>';
+  sel.innerHTML = html;
+  if (pendingSelect && pendingSelect.col === 'polisi') {
+    ensureOption(sel, pendingSelect.v); sel.value = pendingSelect.v; pendingSelect = null;
+    onPolisiChange(); return;
+  }
+  if (cur) { ensureOption(sel, cur); sel.value = cur; }
+}
+function renderTujuanSelect() {
+  const sel = $('fTujuan'); const cur = sel.value;
+  let html = '<option value="">— Pilih Tujuan —</option>';
+  sortName(state.tujuan, 'nama').forEach(t => html += '<option value="' + esc(t.nama) + '">' + esc(t.nama) + '</option>');
+  html += '<option value="__add__">➕ Tambah Tujuan Baru…</option>';
+  sel.innerHTML = html;
+  if (pendingSelect && pendingSelect.col === 'tujuan') {
+    ensureOption(sel, pendingSelect.v); sel.value = pendingSelect.v; pendingSelect = null; return;
+  }
+  if (cur) { ensureOption(sel, cur); sel.value = cur; }
+}
+function renderStatusSelect() {
+  const sel = $('fStatus'); const cur = sel.value;
+  let html = '<option value="">— Pilih Status —</option>';
+  sortName(state.status, 'nama').forEach(s => html += '<option value="' + esc(s.nama) + '">' + esc(s.nama) + '</option>');
+  sel.innerHTML = html;
+  if (cur) { ensureOption(sel, cur); sel.value = cur; }
+}
+function onPolisiChange() {
+  const v = $('fPolisi').value;
+  if (v === '__add__') { $('fPolisi').value = ''; openQuick('polisi'); return; }
+  if (!v) return;
+  const p = state.polisi.find(x => x.polisi === v);
+  if (p && p.kontrak) { suppressAuto = true; $('fKontrak').value = p.kontrak; suppressAuto = false; }
+  const last = sortLaporan(state.laporan.filter(l => l.polisi === v))[0];
+  if (last && last.status && state.status.some(s => s.nama === last.status)) {
+    suppressAuto = true; $('fStatus').value = last.status; suppressAuto = false;
+  }
+}
+
+/* ================= RENDER TABEL ================= */
+function badgeClass(s) {
+  s = (s || '').toUpperCase();
+  if (s === 'KIRIM') return 'b-green';
+  if (s === 'STANDBY') return 'b-amber';
+  if (s === 'INAP') return 'b-blue';
+  if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'b-red';
+  return 'b-gray';
+}
+function visibleLaporan() {
+  const all = sortLaporan(state.laporan);
+  if (showAll) return all;
+  const t = $('rTanggal').value;
+  return all.filter(l => l.tanggal === t);
+}
+function renderRekap() {
+  const rows = visibleLaporan();
+  $('rekapCount').textContent = rows.length + ' data';
+  const tb = $('tbodyRekap');
+  if (!rows.length) {
+    tb.innerHTML = '<tr class="empty"><td colspan="7">Belum ada laporan ' + (showAll ? 'sama sekali.' : 'pada tanggal ini.') + '</td></tr>';
+  } else {
+    tb.innerHTML = rows.map((r, i) =>
+      '<tr><td>' + (i + 1) + '</td>' +
+      '<td class="nowrap">' + esc(fmtDate(r.tanggal)) + '</td>' +
+      '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
+      '<td class="kontrak-cell">' + esc(r.kontrak) + '</td>' +
+      '<td>' + esc(r.tujuan) + '</td>' +
+      '<td><span class="badge ' + badgeClass(r.status) + '">' + esc(r.status) + '</span></td>' +
+      '<td><div class="aksi">' +
+      '<button class="btn mini btn-green" title="Kirim WhatsApp" onclick="waRow(\'' + r.id + '\')">📱</button>' +
+      '<button class="btn mini btn-blue" title="Edit" onclick="editLaporan(\'' + r.id + '\')">✏️</button>' +
+      '<button class="btn mini btn-red" title="Hapus" onclick="hapusLaporan(\'' + r.id + '\')">🗑️</button>' +
+      '</div></td></tr>'
+    ).join('');
+  }
+  updateStats(rows);
+}
+function updateStats(rows) {
+  const c = { KIRIM: 0, 'STANDBY': 0, 'INAP': 0, 'STORING PERBAIKAN': 0 };
+  rows.forEach(r => { const k = (r.status || '').toUpperCase(); if (c[k] != null) c[k]++; });
+  $('statsRow').innerHTML =
+    '<span class="chip c-navy">📊 Total: ' + rows.length + '</span>' +
+    '<span class="chip c-green">🚚 KIRIM: ' + c.KIRIM + '</span>' +
+    '<span class="chip c-amber">🅿️ STANDBY: ' + c.STANDBY + '</span>' +
+    '<span class="chip c-blue">🛏️ INAP: ' + c.INAP + '</span>' +
+    '<span class="chip c-red">🔧 STORING PERBAIKAN: ' + c['STORING PERBAIKAN'] + '</span>';
+}
+function renderPolisiTable() {
+  const arr = sortName(state.polisi, 'polisi');
+  $('countPolisi').textContent = arr.length;
+  $('tbodyPolisi').innerHTML = !arr.length
+    ? '<tr class="empty"><td colspan="4">Belum ada data. Tambahkan melalui form di atas.</td></tr>'
+    : arr.map((p, i) =>
+      '<tr><td>' + (i + 1) + '</td><td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
+      '<td class="kontrak-cell">' + esc(p.kontrak || '-') + '</td>' +
+      '<td><div class="aksi">' +
+      '<button class="btn mini btn-blue" onclick="masterEdit(\'polisi\',\'' + p.id + '\')">✏️ Edit</button>' +
+      '<button class="btn mini btn-red" onclick="hapusMaster(\'polisi\',\'' + p.id + '\')">🗑️ Hapus</button>' +
+      '</div></td></tr>').join('');
+}
+function renderTujuanTable() {
+  const arr = sortName(state.tujuan, 'nama');
+  $('countTujuan').textContent = arr.length;
+  $('tbodyTujuan').innerHTML = !arr.length
+    ? '<tr class="empty"><td colspan="3">Belum ada data. Tambahkan melalui form di atas.</td></tr>'
+    : arr.map((t, i) =>
+      '<tr><td>' + (i + 1) + '</td><td style="font-weight:700;color:var(--navy)">' + esc(t.nama) + '</td>' +
+      '<td><div class="aksi">' +
+      '<button class="btn mini btn-blue" onclick="masterEdit(\'tujuan\',\'' + t.id + '\')">✏️ Edit</button>' +
+      '<button class="btn mini btn-red" onclick="hapusMaster(\'tujuan\',\'' + t.id + '\')">🗑️ Hapus</button>' +
+      '</div></td></tr>').join('');
+}
+function renderStatusTable() {
+  const arr = sortName(state.status, 'nama');
+  $('countStatus').textContent = arr.length;
+  $('tbodyStatus').innerHTML = !arr.length
+    ? '<tr class="empty"><td colspan="3">Belum ada data.</td></tr>'
+    : arr.map((s, i) =>
+      '<tr><td>' + (i + 1) + '</td><td><span class="badge ' + badgeClass(s.nama) + '">' + esc(s.nama) + '</span></td>' +
+      '<td><div class="aksi">' +
+      '<button class="btn mini btn-blue" onclick="masterEdit(\'status\',\'' + s.id + '\')">✏️ Edit</button>' +
+      '<button class="btn mini btn-red" onclick="hapusMaster(\'status\',\'' + s.id + '\')">🗑️ Hapus</button>' +
+      '</div></td></tr>').join('');
+}
+function renderAll() {
+  renderPolisiSelect(); renderTujuanSelect(); renderStatusSelect();
+  renderRekap(); renderPolisiTable(); renderTujuanTable(); renderStatusTable();
+}
+
+/* ================= AKSI LAPORAN ================= */
+async function submitLaporan(e) {
+  e.preventDefault();
+  const d = {
+    tanggal: $('fTanggal').value,
+    polisi: $('fPolisi').value,
+    kontrak: $('fKontrak').value,
+    tujuan: $('fTujuan').value,
+    status: $('fStatus').value
+  };
+  if (!d.tanggal || !d.polisi || !d.kontrak || !d.tujuan || !d.status) { alert('Lengkapi semua data terlebih dahulu!'); return; }
+  try {
+    if (editLaporanId) {
+      await updateRec('laporan', editLaporanId, d);
+      showToast('✔ Laporan diperbarui & tersinkron');
+    } else {
+      await addRec('laporan', d);
+      showToast('✔ Laporan tersimpan & tersinkron ke semua orang');
+    }
+  } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
+  resetLaporanForm();
+}
+function resetLaporanForm() {
+  editLaporanId = null;
+  suppressAuto = true;
+  $('fTanggal').value = todayStr();
+  $('fPolisi').value = ''; $('fKontrak').value = ''; $('fTujuan').value = ''; $('fStatus').value = '';
+  suppressAuto = false;
+  $('btnSimpan').textContent = '💾 SIMPAN LAPORAN';
+  $('btnBatalEdit').style.display = 'none';
+}
+function editLaporan(id) {
+  const r = state.laporan.find(x => x.id === id); if (!r) return;
+  setTab('input');
+  suppressAuto = true;
+  $('fTanggal').value = r.tanggal || todayStr();
+  ensureOption($('fPolisi'), r.polisi); $('fPolisi').value = r.polisi || '';
+  ensureOption($('fKontrak'), r.kontrak); $('fKontrak').value = r.kontrak || '';
+  ensureOption($('fTujuan'), r.tujuan); $('fTujuan').value = r.tujuan || '';
+  ensureOption($('fStatus'), r.status); $('fStatus').value = r.status || '';
+  suppressAuto = false;
+  editLaporanId = id;
+  $('btnSimpan').textContent = '✔ UPDATE LAPORAN';
+  $('btnBatalEdit').style.display = 'block';
+  $('panel-input').scrollIntoView({ behavior: 'smooth' });
+}
+async function hapusLaporan(id) {
+  const r = state.laporan.find(x => x.id === id); if (!r) return;
+  if (!confirm('Hapus laporan ' + r.polisi + ' (' + fmtDate(r.tanggal) + ')?')) return;
+  try { await deleteRec('laporan', id); showToast('🗑️ Laporan dihapus'); }
+  catch (err) { alert('Gagal menghapus: ' + errText(err)); }
+}
+
+/* ================= WHATSAPP ================= */
+function waOpen(text) { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); }
+function waRow(id) {
+  const r = state.laporan.find(x => x.id === id); if (!r) return;
+  waOpen('🚚 *LAPORAN UNIT*\n*DAELY-RIPORT — SINAR MAJU JAYA*\n' +
+    '📅 Tanggal  : ' + fmtDate(r.tanggal) + '\n' +
+    '🚛 No Polisi: ' + r.polisi + '\n' +
+    '📄 Kontrak  : ' + r.kontrak + '\n' +
+    '📍 Tujuan   : ' + r.tujuan + '\n' +
+    '🚦 Status   : ' + r.status);
+}
+function waRekap() {
+  const rows = visibleLaporan();
+  if (!rows.length) { alert('Tidak ada data untuk dikirim.'); return; }
+  let t = '🚚 *REKAP LAPORAN*\n*DAELY-RIPORT — SINAR MAJU JAYA*\n_THE UNI VENUS SERANG BANTEN_\n';
+  if (showAll) {
+    const groups = {};
+    rows.forEach(r => { (groups[r.tanggal] = groups[r.tanggal] || []).push(r); });
+    Object.keys(groups).sort().forEach(tg => {
+      t += '\n📅 *' + fmtDate(tg) + '*\n';
+      groups[tg].forEach((r, i) => {
+        t += (i + 1) + '. *' + r.polisi + '* → ' + r.tujuan + ' | ' + r.status + '\n   _' + r.kontrak + '_\n';
+      });
+    });
+  } else {
+    t += '\n📅 Tanggal: *' + fmtDate($('rTanggal').value) + '*\n';
+    rows.forEach((r, i) => {
+      t += (i + 1) + '. *' + r.polisi + '* → ' + r.tujuan + ' | ' + r.status + '\n   _' + r.kontrak + '_\n';
+    });
+  }
+  t += '\n📊 Total: *' + rows.length + '* unit terdata';
+  waOpen(t);
+}
+
+/* ================= EXPORT EXCEL ================= */
+function rowsToAoa(rows) {
+  const aoa = [['NO', 'TANGGAL', 'NO POLISI', 'KONTRAK', 'TUJUAN', 'STATUS']];
+  rows.forEach((r, i) => aoa.push([i + 1, fmtDate(r.tanggal), r.polisi, r.kontrak, r.tujuan, r.status]));
+  return aoa;
+}
+function writeExcel(baseName, sheets) {
+  if (typeof XLSX !== 'undefined') {
+    const wb = XLSX.utils.book_new();
+    sheets.forEach(sh => {
+      const ws = XLSX.utils.aoa_to_sheet(sh.aoa);
+      ws['!cols'] = (sh.aoa[0] || []).map(h => ({ wch: Math.max(10, String(h || '').length + 6) }));
+      XLSX.utils.book_append_sheet(wb, ws, sh.name);
+    });
+    XLSX.writeFile(wb, baseName + '.xlsx');
+    showToast('⬇ File ' + baseName + '.xlsx diunduh');
+  } else {
+    const aoa = sheets[0].aoa;
+    const csv = '\uFEFF' + 'sep=;\n' + aoa.map(r => r.map(c => {
+      c = String(c == null ? '' : c);
+      return /[;"\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c;
+    }).join(';')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = baseName + '.csv'; a.click();
+    alert('Modul Excel tidak termuat (cek internet). Data disimpan sebagai CSV: ' + baseName + '.csv');
+  }
+}
+function exportHarian() {
+  const rows = visibleLaporan();
+  if (!rows.length) { alert('Tidak ada data untuk diexport.'); return; }
+  const name = showAll ? 'Rekap_Semua_Data' : 'Rekap_Harian_' + ($('rTanggal').value || todayStr());
+  writeExcel(name, [{ name: 'Rekap', aoa: rowsToAoa(rows) }]);
+}
+function exportBulanan() {
+  const m = $('rBulan').value;
+  if (!m) { alert('Pilih bulan terlebih dahulu.'); return; }
+  const rows = sortLaporan(state.laporan.filter(l => (l.tanggal || '').startsWith(m)));
+  if (!rows.length) { alert('Tidak ada data pada bulan ' + m + '.'); return; }
+  const per = {};
+  rows.forEach(r => {
+    const k = r.polisi || '-';
+    per[k] = per[k] || { polisi: k, KIRIM: 0, STANDBY: 0, INAP: 0, 'STORING PERBAIKAN': 0, total: 0 };
+    const o = per[k];
+    const s = (r.status || '').toUpperCase();
+    if (o[s] != null) o[s]++;
+    o.total++;
+  });
+  const aoa2 = [['NO POLISI', 'KIRIM', 'STANDBY', 'INAP', 'STORING PERBAIKAN', 'TOTAL']];
+  Object.values(per).sort((a, b) => a.polisi.localeCompare(b.polisi))
+    .forEach(o => aoa2.push([o.polisi, o.KIRIM, o.STANDBY, o.INAP, o['STORING PERBAIKAN'], o.total]));
+  writeExcel('Rekap_Bulanan_' + m, [
+    { name: 'Laporan', aoa: rowsToAoa(rows) },
+    { name: 'Rekap Per Unit', aoa: aoa2 }
+  ]);
+}
+
+/* ================= MASTER ================= */
+async function submitPolisi(e) {
+  e.preventDefault();
+  const pol = $('mpPolisi').value.trim().toUpperCase();
+  const kon = $('mpKontrak').value;
+  if (!pol || !kon) { alert('Isi No Polisi dan Kontrak!'); return; }
+  try {
+    if (editMaster && editMaster.col === 'polisi') {
+      await updateRec('polisi', editMaster.id, { polisi: pol, kontrak: kon });
+      showToast('✔ No polisi diperbarui');
+    } else {
+      if (state.polisi.some(x => (x.polisi || '').toUpperCase() === pol)) { alert('No polisi sudah terdaftar!'); return; }
+      await addRec('polisi', { polisi: pol, kontrak: kon });
+      showToast('✔ No polisi ditambahkan');
+    }
+  } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
+  $('mpPolisi').value = ''; $('mpKontrak').value = '';
+  editMaster = null; $('btnMpAdd').textContent = '➕ Tambah';
+}
+async function submitTujuan(e) {
+  e.preventDefault();
+  const nm = $('mtNama').value.trim().toUpperCase();
+  if (!nm) return;
+  try {
+    if (editMaster && editMaster.col === 'tujuan') {
+      await updateRec('tujuan', editMaster.id, { nama: nm });
+      showToast('✔ Tujuan diperbarui');
+    } else {
+      if (state.tujuan.some(x => (x.nama || '').toUpperCase() === nm)) { alert('Tujuan sudah terdaftar!'); return; }
+      await addRec('tujuan', { nama: nm });
+      showToast('✔ Tujuan ditambahkan');
+    }
+  } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
+  $('mtNama').value = '';
+  editMaster = null; $('btnMtAdd').textContent = '➕ Tambah';
+}
+async function submitStatus(e) {
+  e.preventDefault();
+  const nm = $('msNama').value.trim().toUpperCase();
+  if (!nm) return;
+  try {
+    if (editMaster && editMaster.col === 'status') {
+      await updateRec('status', editMaster.id, { nama: nm });
+      showToast('✔ Status diperbarui');
+    } else {
+      if (state.status.some(x => (x.nama || '').toUpperCase() === nm)) { alert('Status sudah terdaftar!'); return; }
+      await addRec('status', { nama: nm });
+      showToast('✔ Status ditambahkan');
+    }
+  } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
+  $('msNama').value = '';
+  editMaster = null; $('btnMsAdd').textContent = '➕ Tambah';
+}
+function masterEdit(col, id) {
+  const arr = state[col]; const rec = arr.find(x => x.id === id); if (!rec) return;
+  editMaster = { col: col, id: id };
+  if (col === 'polisi') {
+    setTab('polisi'); $('mpPolisi').value = rec.polisi || ''; $('mpKontrak').value = rec.kontrak || '';
+    $('btnMpAdd').textContent = '✔ Update';
+  } else if (col === 'tujuan') {
+    setTab('tujuan'); $('mtNama').value = rec.nama || ''; $('btnMtAdd').textContent = '✔ Update';
+  } else {
+    setTab('status'); $('msNama').value = rec.nama || ''; $('btnMsAdd').textContent = '✔ Update';
+  }
+}
+async function hapusMaster(col, id) {
+  const rec = state[col].find(x => x.id === id); if (!rec) return;
+  const nm = col === 'polisi' ? rec.polisi : rec.nama;
+  if (!confirm('Hapus "' + nm + '" dari master ' + col.toUpperCase() + '?')) return;
+  try { await deleteRec(col, id); showToast('🗑️ Data dihapus'); }
+  catch (err) { alert('Gagal menghapus: ' + errText(err)); }
+}
+
+/* ================= MODAL TAMBAH CEPAT ================= */
+function openQuick(type) {
+  quickType = type;
+  $('qmTitle').textContent = type === 'polisi' ? '🚛 Tambah No Polisi Baru' : '📍 Tambah Tujuan Baru';
+  $('qmLabel').textContent = type === 'polisi' ? 'NO POLISI' : 'TUJUAN';
+  $('qmKontrakWrap').style.display = type === 'polisi' ? 'block' : 'none';
+  $('qmKontrak').required = type === 'polisi';
+  $('qmKontrak').disabled = type !== 'polisi'; // kontrol tersembunyi wajib dinonaktifkan agar tidak memblokir submit form
+  $('qmText').value = ''; $('qmKontrak').value = '';
+  $('qmodal').classList.add('open');
+  setTimeout(() => $('qmText').focus(), 60);
+}
+function closeQuick() {
+  $('qmodal').classList.remove('open');
+  quickType = null;
+}
+async function submitQuick(e) {
+  e.preventDefault();
+  const nm = $('qmText').value.trim().toUpperCase();
+  if (!nm) return;
+  try {
+    if (quickType === 'polisi') {
+      const kon = $('qmKontrak').value;
+      if (!kon) { alert('Pilih kontrak dulu!'); return; }
+      if (!state.polisi.some(x => (x.polisi || '').toUpperCase() === nm)) {
+        await addRec('polisi', { polisi: nm, kontrak: kon });
+      }
+      pendingSelect = { col: 'polisi', v: nm };
+    } else {
+      if (!state.tujuan.some(x => (x.nama || '').toUpperCase() === nm)) {
+        await addRec('tujuan', { nama: nm });
+      }
+      pendingSelect = { col: 'tujuan', v: nm };
+    }
+  } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
+  closeQuick();
+  renderPolisiSelect(); renderTujuanSelect(); renderStatusSelect();
+  if (quickType === null) renderAll();
+}
+
+/* ================= TAB & EVENT ================= */
+function setTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('show', p.id === 'panel-' + name));
+}
+function bindEvents() {
+  document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+  $('formLaporan').addEventListener('submit', submitLaporan);
+  $('btnBatalEdit').addEventListener('click', resetLaporanForm);
+  $('fPolisi').addEventListener('change', () => { if (!suppressAuto) onPolisiChange(); });
+  $('fTujuan').addEventListener('change', function () { if (this.value === '__add__') { this.value = ''; openQuick('tujuan'); } });
+  $('fTanggal').addEventListener('click', function () { try { this.showPicker(); } catch (e) {} });
+  $('rTanggal').addEventListener('change', () => { showAll = false; $('btnShowAll').textContent = '📋 Tampilkan Semua'; renderRekap(); });
+  $('btnShowAll').addEventListener('click', () => { showAll = !showAll; $('btnShowAll').textContent = showAll ? '📅 Filter Tanggal' : '📋 Tampilkan Semua'; renderRekap(); });
+  $('btnToday').addEventListener('click', () => { showAll = false; $('btnShowAll').textContent = '📋 Tampilkan Semua'; $('rTanggal').value = todayStr(); renderRekap(); });
+  $('btnWaRekap').addEventListener('click', waRekap);
+  $('btnXlsHarian').addEventListener('click', exportHarian);
+  $('btnXlsBulanan').addEventListener('click', exportBulanan);
+  $('formPolisi').addEventListener('submit', submitPolisi);
+  $('formTujuan').addEventListener('submit', submitTujuan);
+  $('formStatus').addEventListener('submit', submitStatus);
+  $('qmForm').addEventListener('submit', submitQuick);
+  $('qmCancel').addEventListener('click', closeQuick);
+  $('qmodal').addEventListener('click', e => { if (e.target === $('qmodal')) closeQuick(); });
+}
+
+init();
+</script>
+</body>
+</html>
