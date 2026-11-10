@@ -141,9 +141,9 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:10px 0 24px;let
   </header>
 
   <div id="offlineBanner">
-    <b>âš  Mode Lokal â€” data hanya tersimpan di perangkat ini.</b>
+    <b>âš  Mode Offline â€” data hanya tersimpan di HP ini.</b>
     <span id="offlineReason"></span>
-    Agar data otomatis sama di semua orang (HP / laptop), aktifkan Firebase Firestore:
+    Agar data otomatis sama di semua HP / laptop, sambungkan penyimpanan online-nya dengan langkah berikut (cukup sekali saja):
     <ol>
       <li>Buka <b>console.firebase.google.com</b> â†’ proyek <b>dealy-riport</b></li>
       <li>Menu <b>Build â†’ Firestore Database â†’ Create database</b> (pilih <i>Start in production mode</i>, lokasi bebas, mis. singapore)</li>
@@ -165,7 +165,7 @@ service cloud.firestore {
 }</pre>
     <p style="margin:8px 0;">lalu klik tombol <b>Publish</b> yang berada di kanan atas area rules.</p>
     <ol start="5">
-      <li>Refresh halaman ini â€” tulisan akan berubah jadi <b>ðŸŸ¢ Terhubung</b></li>
+      <li>Muat ulang halaman ini â€” tulisan akan berubah jadi <b>ðŸŸ¢ Terhubung</b></li>
     </ol>
   </div>
 
@@ -173,9 +173,9 @@ service cloud.firestore {
     <button class="tab-btn active" data-tab="input">ðŸ“ INPUT LAPORAN</button>
     <button class="tab-btn" data-tab="rekap">ðŸ“‹ REKAP LAPORAN</button>
     <button class="tab-btn" data-tab="antrian">â³ ANTRIAN DO</button>
-    <button class="tab-btn" data-tab="polisi">ðŸš› MASTER NO POLISI</button>
-    <button class="tab-btn" data-tab="tujuan">ðŸ“ MASTER TUJUAN</button>
-    <button class="tab-btn" data-tab="status">ðŸš¦ MASTER STATUS</button>
+    <button class="tab-btn" data-tab="polisi">ðŸš› DAFTAR NO POLISI</button>
+    <button class="tab-btn" data-tab="tujuan">ðŸ“ DAFTAR TUJUAN</button>
+    <button class="tab-btn" data-tab="status">ðŸš¦ DAFTAR STATUS</button>
   </nav>
 
   <main>
@@ -183,7 +183,7 @@ service cloud.firestore {
     <section class="panel show" id="panel-input">
       <div class="card">
         <h2>ðŸ“ INPUT LAPORAN</h2>
-        <p class="desc">Isi data laporan unit. KONTRAK &amp; STATUS terisi otomatis setelah NO POLISI dipilih. Data langsung tersinkron ke semua perangkat.</p>
+        <p class="desc">Isi data laporan unit. KONTRAK &amp; STATUS terisi otomatis setelah NO POLISI dipilih. Data langsung sama di semua HP.</p>
         <form id="formLaporan" class="form-col" autocomplete="off">
           <label for="fTanggal">TANGGAL</label>
           <input type="date" id="fTanggal" required>
@@ -205,13 +205,13 @@ service cloud.firestore {
     <section class="panel" id="panel-rekap">
       <div class="card">
         <h2>ðŸ“‹ REKAP LAPORAN <span class="cnt" id="rekapCount">0 data</span></h2>
-        <p class="desc">Rekap tersimpan permanen di database dan dikelompokkan per KONTRAK (ada baris pembatas berwarna, sama seperti Antrian DO). Setiap baris bisa dikirim via WhatsApp, diedit, atau dihapus.</p>
+        <p class="desc">Rekap tersimpan permanen dan dikelompokkan per KONTRAK (ada baris pembatas berwarna, sama seperti Antrian DO). Setiap baris bisa dikirim lewat WhatsApp, diedit, atau dihapus.</p>
         <div class="chips" id="statsRow"></div>
         <div class="filterbar">
           <div><label for="rTanggal">TANGGAL</label><input type="date" id="rTanggal"></div>
           <button class="btn btn-blue" id="btnShowAll">ðŸ“‹ Tampilkan Semua</button>
           <button class="btn btn-ghost" id="btnToday">ðŸ“… Hari Ini</button>
-          <button class="btn btn-green" id="btnWaRekap">ðŸ“± Kirim Rekap via WhatsApp</button>
+          <button class="btn btn-green" id="btnWaRekap">ðŸ“± Kirim Rekap lewat WhatsApp</button>
         </div>
         <div class="tblwrap">
           <table>
@@ -220,9 +220,9 @@ service cloud.firestore {
           </table>
         </div>
         <div class="exportbar">
-          <button class="btn btn-green" id="btnXlsHarian">â¬‡ Export Excel Harian (.xlsx)</button>
+          <button class="btn btn-green" id="btnXlsHarian">â¬‡ Unduh Excel Harian (.xlsx)</button>
           <div><label for="rBulan">BULAN (REKAP BULANAN)</label><input type="month" id="rBulan"></div>
-          <button class="btn btn-navy" id="btnXlsBulanan">â¬‡ Export Excel Bulanan (.xlsx)</button>
+          <button class="btn btn-navy" id="btnXlsBulanan">â¬‡ Unduh Excel Bulanan (.xlsx)</button>
         </div>
       </div>
     </section>
@@ -230,8 +230,8 @@ service cloud.firestore {
     <!-- ============ ANTRIAN DO ============ -->
     <section class="panel" id="panel-antrian">
       <div class="card">
-        <h2>â³ ANTRIAN DO / SHIPMENT <span class="cnt" id="countAntrian">0 unit</span></h2>
-        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup â†’ <b>salin (copy) pesan-pesannya</b> â†’ <b>tempel (paste) di kotak</b> â†’ klik AMBIL NO POLISI â†’ muncul <b>pratinjau centang</b> â†’ SIMPAN. Aturan status: baris ada kata <b>masuk</b> â†’ <b>LOADING</b>; tidak ada kata <b>masuk</b> â†’ <b>ANTRIAN DO</b> (boleh diubah manual di tabel). No polisi yang disimpan otomatis masuk ke <b>Master No Polisi</b> juga â€” kontraknya diisi menyusul saat input laporan.</p>
+        <h2>â³ ANTRIAN DO <span class="cnt" id="countAntrian">0 unit</span></h2>
+        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup â†’ <b>salin (copy) pesan-pesannya</b> â†’ <b>tempel (paste) di kotak</b> â†’ klik AMBIL NO POLISI â†’ muncul <b>pratinjau centang</b> â†’ SIMPAN. Aturan status: baris ada kata <b>masuk</b> â†’ <b>LOADING</b>; tidak ada kata <b>masuk</b> â†’ <b>ANTRIAN DO</b> (boleh diubah manual di tabel). No polisi yang disimpan otomatis masuk ke <b>Daftar No Polisi</b> juga â€” kontraknya diisi menyusul saat input laporan.</p>
         <div class="row" style="margin-bottom:12px">
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/BEFGPoZY0bGCB8KwEYy7HI?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">ðŸ’¬ Buka Grup WA 1</a>
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/CLRIPktR8dU32jwRl7EqBj?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">ðŸ’¬ Buka Grup WA 2</a>
@@ -248,7 +248,7 @@ service cloud.firestore {
         </form>
         <details style="margin:14px 0">
           <summary style="cursor:pointer;font-weight:700;color:var(--navy2);font-size:13px">âš¡ Trik: masuk otomatis tanpa copy-paste (MacroDroid / Tasker)</summary>
-          <p style="font-size:13px;color:var(--mut);margin-top:8px;line-height:1.6">WhatsApp tidak mengizinkan halaman web membaca isi grup secara langsung, tapi HP Android bisa dibantu aplikasi automasi: pasang <b>MacroDroid</b> atau <b>Tasker</b>, lalu buat aturan "notifikasi WhatsApp masuk â†’ buka alamat" dengan isi:<br><code style="background:var(--sky);padding:2px 6px;border-radius:6px">https://kisah27.github.io/DAELY-RIPORT/?antrian=ISI-PESAN</code><br>Halaman ini otomatis mengambil no polisi dari ISI-PESAN dan memasukkannya ke antrian di bawah â€” semua perangkat langsung ikut tersinkron.</p>
+          <p style="font-size:13px;color:var(--mut);margin-top:8px;line-height:1.6">WhatsApp tidak mengizinkan halaman web membaca isi grup secara langsung, tapi HP Android bisa dibantu aplikasi automasi: pasang <b>MacroDroid</b> atau <b>Tasker</b>, lalu buat aturan "notifikasi WhatsApp masuk â†’ buka alamat" dengan isi:<br><code style="background:var(--sky);padding:2px 6px;border-radius:6px">https://kisah27.github.io/DAELY-RIPORT/?antrian=ISI-PESAN</code><br>Halaman ini otomatis mengambil no polisi dari ISI-PESAN dan memasukkannya ke antrian di bawah â€” semua HP langsung ikut sama.</p>
         </details>
         <div class="tblwrap">
           <table style="min-width:600px">
@@ -257,7 +257,7 @@ service cloud.firestore {
           </table>
         </div>
         <div class="exportbar">
-          <button class="btn btn-green" id="btnAntWa">ðŸ“± Kirim Antrian via WhatsApp</button>
+          <button class="btn btn-green" id="btnAntWa">ðŸ“± Kirim Antrian lewat WhatsApp</button>
           <button class="btn btn-red" id="btnAntKosong">ðŸ—‘ï¸ Kosongkan Antrian</button>
         </div>
       </div>
@@ -266,8 +266,8 @@ service cloud.firestore {
     <!-- ============ MASTER NO POLISI ============ -->
     <section class="panel" id="panel-polisi">
       <div class="card">
-        <h2>ðŸš› MASTER NO POLISI <span class="cnt" id="countPolisi">0</span></h2>
-        <p class="desc">Daftar nomor polisi + kontraknya. Otomatis dipakai sebagai dropdown di Input Laporan. No polisi baru yang ditambah lewat Input Laporan juga masuk ke sini otomatis.</p>
+        <h2>ðŸš› DAFTAR NO POLISI <span class="cnt" id="countPolisi">0</span></h2>
+        <p class="desc">Daftar nomor polisi + kontraknya. Otomatis dipakai sebagai pilihan di Input Laporan. No polisi baru yang ditambah lewat Input Laporan juga masuk ke sini otomatis.</p>
         <form id="formPolisi" class="row" style="margin-bottom:14px">
           <input type="text" id="mpPolisi" placeholder="Contoh: B 9120 UYT" required>
           <select id="mpKontrak" required></select>
@@ -285,8 +285,8 @@ service cloud.firestore {
     <!-- ============ MASTER TUJUAN ============ -->
     <section class="panel" id="panel-tujuan">
       <div class="card">
-        <h2>ðŸ“ MASTER TUJUAN <span class="cnt" id="countTujuan">0</span></h2>
-        <p class="desc">Daftar tujuan pengiriman. Otomatis dipakai sebagai dropdown di Input Laporan. Tujuan baru yang ditambah lewat Input Laporan juga masuk ke sini otomatis.</p>
+        <h2>ðŸ“ DAFTAR TUJUAN <span class="cnt" id="countTujuan">0</span></h2>
+        <p class="desc">Daftar tujuan pengiriman. Otomatis dipakai sebagai pilihan di Input Laporan. Tujuan baru yang ditambah lewat Input Laporan juga masuk ke sini otomatis.</p>
         <form id="formTujuan" class="row" style="margin-bottom:14px">
           <input type="text" id="mtNama" placeholder="Contoh: CILACAP" required>
           <button type="submit" class="btn btn-navy" id="btnMtAdd">âž• Tambah</button>
@@ -303,8 +303,8 @@ service cloud.firestore {
     <!-- ============ MASTER STATUS ============ -->
     <section class="panel" id="panel-status">
       <div class="card">
-        <h2>ðŸš¦ MASTER STATUS <span class="cnt" id="countStatus">0</span></h2>
-        <p class="desc">Daftar status unit untuk dropdown. Berisi bawaan: KIRIM, STANDBY, INAP, STORING PERBAIKAN. Saat NO POLISI dipilih di Input Laporan, STATUS otomatis mengikuti status terakhir unit tersebut.</p>
+        <h2>ðŸš¦ DAFTAR STATUS <span class="cnt" id="countStatus">0</span></h2>
+        <p class="desc">Daftar status unit untuk pilihan. Berisi bawaan: KIRIM, STANDBY, INAP, STORING PERBAIKAN. Saat NO POLISI dipilih di Input Laporan, STATUS otomatis mengikuti status terakhir unit tersebut.</p>
         <form id="formStatus" class="row" style="margin-bottom:14px">
           <input type="text" id="msNama" placeholder="Contoh: KIRIM" required>
           <button type="submit" class="btn btn-navy" id="btnMsAdd">âž• Tambah</button>
@@ -391,10 +391,10 @@ const sortName = (arr, key) => arr.slice().sort((a,b) => String(a[key]||'').loca
 const sortLaporan = arr => arr.slice().sort((a,b) => (b.tanggal||'').localeCompare(a.tanggal||'') || (b.createdAt||0) - (a.createdAt||0));
 const errText = e => {
   const code = e && e.code ? e.code : '';
-  if (code === 'permission-denied') return 'Firestore menolak akses (Rules belum dibuka).';
-  if (code === 'failed-precondition' || code === 'not-found') return 'Firestore Database belum dibuat di project ini.';
-  if (code.indexOf('unavailable') > -1 || code.indexOf('network') > -1) return 'Tidak ada koneksi ke server Firebase.';
-  return (e && e.message) ? e.message : 'Gagal terhubung ke Firebase.';
+  if (code === 'permission-denied') return 'Penyimpanan online menolak akses (aturannya belum dibuka â€” ikuti langkah di banner).';
+  if (code === 'failed-precondition' || code === 'not-found') return 'Penyimpanan online belum dibuat di proyek ini (ikuti langkah di banner).';
+  if (code.indexOf('unavailable') > -1 || code.indexOf('network') > -1) return 'Tidak ada koneksi internet.';
+  return (e && e.message) ? e.message : 'Gagal menyambung ke penyimpanan online.';
 };
 function showToast(msg) {
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
@@ -415,7 +415,7 @@ async function init() {
   bindEvents();
   if (FORCE_OFFLINE) { goOffline('Mode demo.'); handleAntrianUrl(); return; }
   try {
-    if (typeof firebase === 'undefined') throw { message: 'SDK Firebase gagal dimuat (periksa koneksi internet).' };
+    if (typeof firebase === 'undefined') throw { message: 'Bagian penyambung gagal dimuat (periksa koneksi internet).' };
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     const timeout = new Promise((_, rej) => setTimeout(() => rej({ code: 'unavailable' }), 9000));
@@ -459,8 +459,8 @@ function goOffline(reason) {
 function setSync(isOnline, reason) {
   $('syncDot').className = 'dot ' + (isOnline ? 'on' : 'off');
   $('syncText').textContent = isOnline
-    ? 'Terhubung Firebase â€” data sinkron otomatis ke semua orang'
-    : 'Mode Lokal (data di perangkat ini saja)';
+    ? 'Terhubung â€” data langsung sama di semua HP'
+    : 'Mode Offline â€” data hanya di HP ini';
   $('offlineBanner').style.display = isOnline ? 'none' : 'block';
   if (reason) $('offlineReason').textContent = '(' + reason.trim() + ') ';
 }
@@ -658,10 +658,10 @@ async function submitLaporan(e) {
   try {
     if (editLaporanId) {
       await updateRec('laporan', editLaporanId, d);
-      showToast('âœ” Laporan diperbarui & tersinkron');
+      showToast('âœ” Laporan diperbarui & langsung sama di semua HP');
     } else {
       await addRec('laporan', d);
-      showToast('âœ” Laporan tersimpan & tersinkron ke semua orang');
+      showToast('âœ” Laporan tersimpan & langsung sama di semua HP');
     }
   } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
   resetLaporanForm();
@@ -803,7 +803,7 @@ function previewAntrian(text, sumber) {
       const k = normPol(f.polisi);
       const inAnt = state.antrian.some(a => normPol(a.polisi) === k);
       const inMaster = state.polisi.some(p => normPol(p.polisi) === k);
-      const tag = !inMaster ? 'MASTER BARU' : (!inAnt ? 'BARU' : 'SUDAH ADA');
+      const tag = !inMaster ? 'POLISI BARU' : (!inAnt ? 'BARU' : 'SUDAH ADA');
       const cls = !inMaster ? 'tag-master' : (!inAnt ? 'tag-baru' : 'tag-exist');
       return '<div class="pv-row"><label><input type="checkbox" class="pv-check" checked> <span class="pv-pol">' + esc(f.polisi) + '</span></label>' +
         '<select class="sel-mini" onchange="antPreviewItems[' + i + '].status = this.value">' + opts(f.status) + '</select>' +
@@ -819,14 +819,14 @@ async function simpanPreview() {
   const r = await simpanAntrianList(items, 'TEMPEL');
   batalPreview();
   $('antText').value = '';
-  showToast('â³ ' + r.tambah + ' baru, ' + r.update + ' status naik' + (r.master ? ', ' + r.master + ' masuk master' : ''));
+  showToast('â³ ' + r.tambah + ' baru, ' + r.update + ' status naik' + (r.master ? ', ' + r.master + ' masuk daftar no polisi' : ''));
 }
 function batalPreview() { antPreviewItems = []; const b = $('antPreview'); if (b) { b.style.display = 'none'; b.innerHTML = ''; } }
 async function ingestAntrian(text, sumber) { // jalur otomatis via URL ?antrian= (tanpa pratinjau)
   const found = extractPolisi(text);
   if (!found.length) { showToast('âš  Pesan otomatis: tidak ada no polisi dikenali'); return; }
   const r = await simpanAntrianList(found, sumber);
-  showToast('â³ +' + r.tambah + ' antrian, ' + r.update + ' status naik' + (r.master ? ', +' + r.master + ' master' : ''));
+  showToast('â³ +' + r.tambah + ' antrian, ' + r.update + ' status naik' + (r.master ? ', +' + r.master + ' daftar no polisi' : ''));
 }
 async function submitAntrianManual(e) {
   e.preventDefault();
