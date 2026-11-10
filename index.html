@@ -80,6 +80,8 @@ tbody td{padding:10px;border-top:1px solid var(--line);vertical-align:middle}
 tbody tr:nth-child(even){background:#f4f8fd}
 tbody tr:hover{background:var(--sky)}
 tbody tr.empty td{text-align:center;color:var(--mut);padding:26px 10px}
+tr.ant-grp td{background:#dbe7f8;color:#173a7a;font-weight:800;font-size:11.5px;letter-spacing:.8px;padding:7px 10px;border-top:2px solid var(--navy);white-space:nowrap}
+tbody tr.ant-grp:hover{background:#dbe7f8}
 .badge{padding:3px 11px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.3px;white-space:nowrap;display:inline-block}
 .b-green{background:var(--green-bg);color:var(--green)} .b-amber{background:var(--amber-bg);color:var(--amber)}
 .b-blue{background:#e9e6fb;color:var(--purple)} .b-red{background:var(--red-bg);color:var(--red)}
@@ -243,7 +245,7 @@ service cloud.firestore {
         </details>
         <div class="tblwrap">
           <table style="min-width:600px">
-            <thead><tr><th>NO</th><th>NO POLISI</th><th>STATUS</th><th>WAKTU MASUK</th><th>SUMBER</th><th>AKSI</th></tr></thead>
+            <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>STATUS</th><th>WAKTU MASUK</th><th>SUMBER</th><th>AKSI</th></tr></thead>
             <tbody id="tbodyAntrian"></tbody>
           </table>
         </div>
@@ -810,19 +812,32 @@ async function submitAntrianManual(e) {
   $('antManual').value = '';
   showToast('⏳ ' + pol + ' masuk antrian — kontrak diisi nanti di master/input');
 }
+function grupAntrian(arr) {
+  const map = {};
+  arr.forEach(r => {
+    const m = state.polisi.find(p => normPol(p.polisi) === normPol(r.polisi));
+    const k = (m && m.kontrak ? String(m.kontrak).trim().toUpperCase() : '');
+    (map[k] = map[k] || []).push(Object.assign({}, r, { kontrak: k }));
+  });
+  return Object.keys(map).sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b, 'id', { numeric: true })))
+    .map(k => ({ kontrak: k, items: map[k] }));
+}
 function renderAntrian() {
   const arr = state.antrian.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   $('countAntrian').textContent = arr.length + ' unit';
   const tb = $('tbodyAntrian');
   if (!arr.length) {
-    tb.innerHTML = '<tr class="empty"><td colspan="6">Antrian kosong. Tempel chat WhatsApp di atas → AMBIL NO POLISI → centang → SIMPAN.</td></tr>';
+    tb.innerHTML = '<tr class="empty"><td colspan="7">Antrian kosong. Tempel chat WhatsApp di atas → AMBIL NO POLISI → centang → SIMPAN.</td></tr>';
     return;
   }
-  tb.innerHTML = arr.map((r, i) => {
-    const st = ANT_STATUS.indexOf(r.status) > -1 ? r.status : 'ANTRIAN DO';
-    const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
-    return '<tr><td>' + (i + 1) + '</td>' +
+  tb.innerHTML = grupAntrian(arr).map(g =>
+    '<tr class="ant-grp"><td colspan="7"># KONTRAK ' + esc(g.kontrak || '(BELUM DIISI)') + '</td></tr>' +
+    g.items.map((r, i) => {
+      const st = ANT_STATUS.indexOf(r.status) > -1 ? r.status : 'ANTRIAN DO';
+      const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
+      return '<tr><td>' + (i + 1) + '</td>' +
       '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
+      '<td class="kontrak-cell">' + esc(r.kontrak || '-') + '</td>' +
       '<td><select class="sel-mini" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
       '<td class="nowrap">' + fmtWaktu(r.createdAt) + '</td>' +
       '<td>' + esc(r.sumber || '-') + '</td>' +
@@ -830,7 +845,8 @@ function renderAntrian() {
       '<button class="btn mini btn-blue" title="Buat laporan dari antrian" onclick="buatLaporanDariAntrian(\'' + r.id + '\')">📝</button>' +
       '<button class="btn mini btn-red" title="Hapus" onclick="hapusAntrian(\'' + r.id + '\')">🗑️</button>' +
       '</div></td></tr>';
-  }).join('');
+    }).join('')
+  ).join('');
 }
 async function setStatusAntrian(id, status) {
   try { await updateRec('antrian', id, { status: status }); showToast('✔ Status antrian diubah: ' + status); }
@@ -863,8 +879,11 @@ function waAntrian() {
   const arr = state.antrian.slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   if (!arr.length) { alert('Antrian masih kosong.'); return; }
   let t = '⏳ ANTRIAN DO - SINAR MAJU JAYA\n';
-  arr.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
-  t += 'Total: ' + arr.length + ' unit';
+  grupAntrian(arr).forEach(g => {
+    t += '\n# KONTRAK ' + (g.kontrak || '(BELUM DIISI)') + '\n';
+    g.items.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
+  });
+  t += '\nTotal: ' + arr.length + ' unit';
   waOpen(t);
 }
 function handleAntrianUrl() {
@@ -1081,4 +1100,4 @@ function bindEvents() {
 init();
 </script>
 </body>
-  </html>
+</html>
