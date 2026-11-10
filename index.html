@@ -482,10 +482,14 @@ function fillKontrakSelects() {
     sel.innerHTML = html;
   });
 }
-function renderPolisiSelect() {
+function renderPolisiSelect() { // dikelompokkan per kontrak (sama seperti tabel master): judul kontrak, di bawahnya no polisi miliknya
   const sel = $('fPolisi'); const cur = sel.value;
   let html = '<option value="">— Pilih No Polisi —</option>';
-  sortName(state.polisi, 'polisi').forEach(p => html += '<option value="' + esc(p.polisi) + '">' + esc(p.polisi) + '</option>');
+  grupPolisi(sortName(state.polisi, 'polisi')).forEach(g => {
+    html += '<optgroup label="' + esc('# KONTRAK ' + (g.kontrak || '(BELUM DIISI)')) + '">';
+    g.items.forEach(p => html += '<option value="' + esc(p.polisi) + '">' + esc(p.polisi) + '</option>');
+    html += '</optgroup>';
+  });
   html += '<option value="__add__">➕ Tambah No Polisi Baru…</option>';
   sel.innerHTML = html;
   if (pendingSelect && pendingSelect.col === 'polisi') {
@@ -1129,4 +1133,4 @@ function bindEvents() {
 init();
 </script>
 </body>
-</html>
+  </html>
