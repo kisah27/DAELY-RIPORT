@@ -572,18 +572,27 @@ function updateStats(rows) {
     '<span class="chip c-blue">🛏️ INAP: ' + c.INAP + '</span>' +
     '<span class="chip c-red">🔧 STORING PERBAIKAN: ' + c['STORING PERBAIKAN'] + '</span>';
 }
+function grupPolisi(arr) { // kelompokkan per kontrak; yang belum diisi ditaruh paling bawah
+  const map = {};
+  arr.forEach(p => { const k = kontrakKey(p.kontrak); (map[k] = map[k] || []).push(p); });
+  return Object.keys(map).sort((a, b) => (a === '' ? 1 : b === '' ? -1 : a.localeCompare(b, 'id', { numeric: true })))
+    .map(k => ({ kontrak: k, items: map[k] }));
+}
 function renderPolisiTable() {
   const arr = sortName(state.polisi, 'polisi');
   $('countPolisi').textContent = arr.length;
-  $('tbodyPolisi').innerHTML = !arr.length
-    ? '<tr class="empty"><td colspan="4">Belum ada data. Tambahkan melalui form di atas.</td></tr>'
-    : arr.map((p, i) =>
-      '<tr><td>' + (i + 1) + '</td><td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
-      '<td class="kontrak-cell">' + esc(p.kontrak || '-') + '</td>' +
-      '<td><div class="aksi">' +
-      '<button class="btn mini btn-blue" onclick="masterEdit(\'polisi\',\'' + p.id + '\')">✏️ Edit</button>' +
-      '<button class="btn mini btn-red" onclick="hapusMaster(\'polisi\',\'' + p.id + '\')">🗑️ Hapus</button>' +
-      '</div></td></tr>').join('');
+  if (!arr.length) { $('tbodyPolisi').innerHTML = '<tr class="empty"><td colspan="4">Belum ada data. Tambahkan melalui form di atas.</td></tr>'; return; }
+  $('tbodyPolisi').innerHTML = grupPolisi(arr).map(g => {
+    const c = warnaKontrak(g.kontrak);
+    return bandKontrak(g.kontrak, g.items.length, 4, c) +
+      g.items.map((p, i) =>
+        '<tr><td>' + (i + 1) + '</td><td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
+        '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(g.kontrak || '-') + '</td>' +
+        '<td><div class="aksi">' +
+        '<button class="btn mini btn-blue" onclick="masterEdit(\'polisi\',\'' + p.id + '\')">✏️ Edit</button>' +
+        '<button class="btn mini btn-red" onclick="hapusMaster(\'polisi\',\'' + p.id + '\')">🗑️ Hapus</button>' +
+        '</div></td></tr>').join('');
+  }).join('');
 }
 function renderTujuanTable() {
   const arr = sortName(state.tujuan, 'nama');
@@ -812,11 +821,30 @@ async function submitAntrianManual(e) {
   $('antManual').value = '';
   showToast('⏳ ' + pol + ' masuk antrian — kontrak diisi nanti di master/input');
 }
+const KONTRAK_WARNA = [
+  ['#dbeafe', '#1e3a8a'], ['#dcfce7', '#166534'], ['#fef3c7', '#92400e'],
+  ['#ffe4e6', '#9f1239'], ['#ede9fe', '#5b21b6'], ['#cffafe', '#155e75'],
+  ['#ecfccb', '#3f6212'], ['#ffedd5', '#9a3412'], ['#ccfbf1', '#115e59'],
+  ['#fae8ff', '#86198f']
+];
+function warnaKontrak(k) { // warna tetap untuk tiap kontrak (sama di tabel antrian & master)
+  if (!k) return { bg: '#e5e7eb', fg: '#374151' };
+  let h = 7;
+  for (let i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
+  const c = KONTRAK_WARNA[h % KONTRAK_WARNA.length];
+  return { bg: c[0], fg: c[1] };
+}
+function kontrakKey(v) { // "KONTRAK MIL/WING BOX" dan "MIL/WING BOX" jadi satu kelompok yang sama
+  return String(v || '').trim().toUpperCase().replace(/^KONTRAK\s+/, '');
+}
+function bandKontrak(kontrak, jumlah, colspan, c) { // baris pembatas antar kelompok kontrak
+  return '<tr class="ant-grp"><td colspan="' + colspan + '" style="background:' + c.bg + ';color:' + c.fg + ';border-top-color:' + c.fg + '"># KONTRAK ' + esc(kontrak || '(BELUM DIISI)') + ' <span style="font-weight:600;opacity:.75">· ' + jumlah + ' unit</span></td></tr>';
+}
 function grupAntrian(arr) {
   const map = {};
   arr.forEach(r => {
     const m = state.polisi.find(p => normPol(p.polisi) === normPol(r.polisi));
-    const k = (m && m.kontrak ? String(m.kontrak).trim().toUpperCase() : '');
+    const k = m ? kontrakKey(m.kontrak) : '';
     (map[k] = map[k] || []).push(Object.assign({}, r, { kontrak: k }));
   });
   return Object.keys(map).sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b, 'id', { numeric: true })))
@@ -830,23 +858,24 @@ function renderAntrian() {
     tb.innerHTML = '<tr class="empty"><td colspan="7">Antrian kosong. Tempel chat WhatsApp di atas → AMBIL NO POLISI → centang → SIMPAN.</td></tr>';
     return;
   }
-  tb.innerHTML = grupAntrian(arr).map(g =>
-    '<tr class="ant-grp"><td colspan="7"># KONTRAK ' + esc(g.kontrak || '(BELUM DIISI)') + '</td></tr>' +
-    g.items.map((r, i) => {
-      const st = ANT_STATUS.indexOf(r.status) > -1 ? r.status : 'ANTRIAN DO';
-      const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
-      return '<tr><td>' + (i + 1) + '</td>' +
-      '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
-      '<td class="kontrak-cell">' + esc(r.kontrak || '-') + '</td>' +
-      '<td><select class="sel-mini" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
-      '<td class="nowrap">' + fmtWaktu(r.createdAt) + '</td>' +
-      '<td>' + esc(r.sumber || '-') + '</td>' +
-      '<td><div class="aksi">' +
-      '<button class="btn mini btn-blue" title="Buat laporan dari antrian" onclick="buatLaporanDariAntrian(\'' + r.id + '\')">📝</button>' +
-      '<button class="btn mini btn-red" title="Hapus" onclick="hapusAntrian(\'' + r.id + '\')">🗑️</button>' +
-      '</div></td></tr>';
-    }).join('')
-  ).join('');
+  tb.innerHTML = grupAntrian(arr).map(g => {
+    const c = warnaKontrak(g.kontrak);
+    return bandKontrak(g.kontrak, g.items.length, 7, c) +
+      g.items.map((r, i) => {
+        const st = ANT_STATUS.indexOf(r.status) > -1 ? r.status : 'ANTRIAN DO';
+        const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
+        return '<tr><td>' + (i + 1) + '</td>' +
+        '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
+        '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(r.kontrak || '-') + '</td>' +
+        '<td><select class="sel-mini" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
+        '<td class="nowrap">' + fmtWaktu(r.createdAt) + '</td>' +
+        '<td>' + esc(r.sumber || '-') + '</td>' +
+        '<td><div class="aksi">' +
+        '<button class="btn mini btn-blue" title="Buat laporan dari antrian" onclick="buatLaporanDariAntrian(\'' + r.id + '\')">📝</button>' +
+        '<button class="btn mini btn-red" title="Hapus" onclick="hapusAntrian(\'' + r.id + '\')">🗑️</button>' +
+        '</div></td></tr>';
+      }).join('');
+    }).join('');
 }
 async function setStatusAntrian(id, status) {
   try { await updateRec('antrian', id, { status: status }); showToast('✔ Status antrian diubah: ' + status); }
