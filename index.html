@@ -137,23 +137,23 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:10px 0 24px;let
     </a>
     <h1>DAELY-RIPORT SINAR MAJU JAYA</h1>
     <div class="sub">THE UNI VENUS SERANG BANTEN</div>
-    <div id="syncStatus"><span class="dot off" id="syncDot"></span><span id="syncText">Menghubungkanâ€¦</span></div>
+    <div id="syncStatus"><span class="dot off" id="syncDot"></span><span id="syncText">Menghubungkan...</span></div>
   </header>
 
   <div id="offlineBanner">
-    <b>âš  Mode Offline â€” data hanya tersimpan di HP ini.</b>
+    <b>Mode Offline - data hanya tersimpan di HP ini.</b>
     <span id="offlineReason"></span>
     Agar data otomatis sama di semua HP / laptop, sambungkan penyimpanan online-nya dengan langkah berikut (cukup sekali saja):
     <ol>
-      <li>Buka <b>console.firebase.google.com</b> â†’ proyek <b>dealy-riport</b></li>
-      <li>Menu <b>Build â†’ Firestore Database â†’ Create database</b> (pilih <i>Start in production mode</i>, lokasi bebas, mis. singapore)</li>
+      <li>Buka <b>console.firebase.google.com</b> -> proyek <b>dealy-riport</b></li>
+      <li>Menu <b>Build -> Firestore Database -> Create database</b> (pilih <i>Start in production mode</i>, lokasi bebas, mis. singapore)</li>
       <li style="background:#fdecec;border-left:4px solid #c0392b;padding:8px 10px;list-style:none;margin-left:-24px;margin-bottom:8px;border-radius:6px;">
         <b style="color:#c0392b;">PENTING: pilih menu yang bertuliskan "Firestore Database", BUKAN "Realtime Database".</b><br>
         Cek judul besar di atas halaman setelah masuk: harus tertulis <b>Firestore Database</b>.
-        Kalau tertulis <b>Realtime Database</b>, itu menu yang salah â€” rules di bawah akan gagal
-        dengan tulisan merah <i>"Parse error"</i> seperti yang terjadi sebelumnya. Kembali ke menu â˜° lalu pilih Firestore Database.
+        Kalau tertulis <b>Realtime Database</b>, itu menu yang salah - rules di bawah akan gagal
+        dengan tulisan merah <i>"Parse error"</i> seperti yang terjadi sebelumnya. Kembali ke menu lalu pilih Firestore Database.
       </li>
-      <li>Tab <b>Rules</b> â†’ hapus semua isinya â†’ ganti menjadi (boleh di-copy persis):</li>
+      <li>Tab <b>Rules</b> -> hapus semua isinya -> ganti menjadi (boleh di-copy persis):</li>
     </ol>
     <pre style="background:#0f2b46;color:#d5e6f7;padding:10px;border-radius:8px;overflow-x:auto;font-size:11px;line-height:1.5;">rules_version = '2';
 service cloud.firestore {
@@ -165,24 +165,24 @@ service cloud.firestore {
 }</pre>
     <p style="margin:8px 0;">lalu klik tombol <b>Publish</b> yang berada di kanan atas area rules.</p>
     <ol start="5">
-      <li>Muat ulang halaman ini â€” tulisan akan berubah jadi <b>ðŸŸ¢ Terhubung</b></li>
+      <li>Muat ulang halaman ini - tulisan akan berubah jadi <b>Terhubung</b></li>
     </ol>
   </div>
 
   <nav>
-    <button class="tab-btn active" data-tab="input">ðŸ“ INPUT LAPORAN</button>
-    <button class="tab-btn" data-tab="rekap">ðŸ“‹ REKAP LAPORAN</button>
-    <button class="tab-btn" data-tab="antrian">â³ ANTRIAN DO</button>
-    <button class="tab-btn" data-tab="polisi">ðŸš› DAFTAR NO POLISI</button>
-    <button class="tab-btn" data-tab="tujuan">ðŸ“ DAFTAR TUJUAN</button>
-    <button class="tab-btn" data-tab="status">ðŸš¦ DAFTAR STATUS</button>
+    <button class="tab-btn active" data-tab="input">INPUT LAPORAN</button>
+    <button class="tab-btn" data-tab="rekap">REKAP LAPORAN</button>
+    <button class="tab-btn" data-tab="antrian">ANTRIAN DO</button>
+    <button class="tab-btn" data-tab="polisi">DAFTAR NO POLISI</button>
+    <button class="tab-btn" data-tab="tujuan">DAFTAR TUJUAN</button>
+    <button class="tab-btn" data-tab="status">DAFTAR STATUS</button>
   </nav>
 
   <main>
     <!-- ============ INPUT ============ -->
     <section class="panel show" id="panel-input">
       <div class="card">
-        <h2>ðŸ“ INPUT LAPORAN</h2>
+        <h2>INPUT LAPORAN</h2>
         <p class="desc">Isi data laporan unit. KONTRAK &amp; STATUS terisi otomatis setelah NO POLISI dipilih. Data langsung sama di semua HP.</p>
         <form id="formLaporan" class="form-col" autocomplete="off">
           <label for="fTanggal">TANGGAL</label>
@@ -195,8 +195,8 @@ service cloud.firestore {
           <select id="fTujuan" required></select>
           <label for="fStatus">STATUS</label>
           <select id="fStatus" required></select>
-          <button type="submit" class="btn btn-navy big" id="btnSimpan">ðŸ’¾ SIMPAN LAPORAN</button>
-          <button type="button" class="btn btn-ghost big" id="btnBatalEdit" style="display:none">âœ– BATAL EDIT</button>
+          <button type="submit" class="btn btn-navy big" id="btnSimpan">SIMPAN LAPORAN</button>
+          <button type="button" class="btn btn-ghost big" id="btnBatalEdit" style="display:none">BATAL EDIT</button>
         </form>
       </div>
     </section>
@@ -204,14 +204,14 @@ service cloud.firestore {
     <!-- ============ REKAP ============ -->
     <section class="panel" id="panel-rekap">
       <div class="card">
-        <h2>ðŸ“‹ REKAP LAPORAN <span class="cnt" id="rekapCount">0 data</span></h2>
+        <h2>REKAP LAPORAN <span class="cnt" id="rekapCount">0 data</span></h2>
         <p class="desc">Rekap tersimpan permanen dan dikelompokkan per KONTRAK (ada baris pembatas berwarna, sama seperti Antrian DO). Setiap baris bisa dikirim lewat WhatsApp, diedit, atau dihapus.</p>
         <div class="chips" id="statsRow"></div>
         <div class="filterbar">
           <div><label for="rTanggal">TANGGAL</label><input type="date" id="rTanggal"></div>
-          <button class="btn btn-blue" id="btnShowAll">ðŸ“‹ Tampilkan Semua</button>
-          <button class="btn btn-ghost" id="btnToday">ðŸ“… Hari Ini</button>
-          <button class="btn btn-green" id="btnWaRekap">ðŸ“± Kirim Rekap lewat WhatsApp</button>
+          <button class="btn btn-blue" id="btnShowAll">Tampilkan Semua</button>
+          <button class="btn btn-ghost" id="btnToday">Hari Ini</button>
+          <button class="btn btn-green" id="btnWaRekap">Kirim Rekap lewat WhatsApp</button>
         </div>
         <div class="tblwrap">
           <table>
@@ -220,9 +220,9 @@ service cloud.firestore {
           </table>
         </div>
         <div class="exportbar">
-          <button class="btn btn-green" id="btnXlsHarian">â¬‡ Unduh Excel Harian (.xlsx)</button>
+          <button class="btn btn-green" id="btnXlsHarian">Unduh Excel Harian (.xlsx)</button>
           <div><label for="rBulan">BULAN (REKAP BULANAN)</label><input type="month" id="rBulan"></div>
-          <button class="btn btn-navy" id="btnXlsBulanan">â¬‡ Unduh Excel Bulanan (.xlsx)</button>
+          <button class="btn btn-navy" id="btnXlsBulanan">Unduh Excel Bulanan (.xlsx)</button>
         </div>
       </div>
     </section>
@@ -230,25 +230,25 @@ service cloud.firestore {
     <!-- ============ ANTRIAN DO ============ -->
     <section class="panel" id="panel-antrian">
       <div class="card">
-        <h2>â³ ANTRIAN DO <span class="cnt" id="countAntrian">0 unit</span></h2>
-        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup â†’ <b>salin (copy) pesan-pesannya</b> â†’ <b>tempel (paste) di kotak</b> â†’ klik AMBIL NO POLISI â†’ muncul <b>pratinjau centang</b> â†’ SIMPAN. Aturan status: baris ada kata <b>masuk</b> â†’ <b>LOADING</b>; tidak ada kata <b>masuk</b> â†’ <b>ANTRIAN DO</b> (boleh diubah manual di tabel). No polisi yang disimpan otomatis masuk ke <b>Daftar No Polisi</b> juga â€” kontraknya diisi menyusul saat input laporan.</p>
+        <h2>ANTRIAN DO <span class="cnt" id="countAntrian">0 unit</span></h2>
+        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. Aturan status: baris ada kata <b>masuk</b> -> <b>LOADING</b>; tidak ada kata <b>masuk</b> -> <b>ANTRIAN DO</b> (boleh diubah manual di tabel). No polisi yang disimpan otomatis masuk ke <b>Daftar No Polisi</b> juga - kontraknya diisi menyusul saat input laporan.</p>
         <div class="row" style="margin-bottom:12px">
-          <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/BEFGPoZY0bGCB8KwEYy7HI?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">ðŸ’¬ Buka Grup WA 1</a>
-          <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/CLRIPktR8dU32jwRl7EqBj?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">ðŸ’¬ Buka Grup WA 2</a>
+          <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/BEFGPoZY0bGCB8KwEYy7HI?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 1</a>
+          <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/CLRIPktR8dU32jwRl7EqBj?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 2</a>
         </div>
         <textarea id="antText" placeholder="Contoh tempelan chat:&#10;B 9526 UPA masuk&#10;B 9120 UYT masuk loading&#10;B 9344 KSA antrian DO 12&#10;B 9777 TRK siap jalan"></textarea>
         <div class="row" style="margin-top:10px">
-          <button type="button" class="btn btn-navy" id="btnAntAmbil">ðŸ”Ž AMBIL NO POLISI</button>
-          <button type="button" class="btn btn-ghost" id="btnAntBersih">ðŸ§¹ Bersihkan Kotak</button>
+          <button type="button" class="btn btn-navy" id="btnAntAmbil">AMBIL NO POLISI</button>
+          <button type="button" class="btn btn-ghost" id="btnAntBersih">Bersihkan Kotak</button>
         </div>
         <div id="antPreview"></div>
         <form id="formAntrianManual" class="row" style="margin-top:14px">
           <input type="text" id="antManual" placeholder="Tambah manual, contoh: B 9120 UYT">
-          <button type="submit" class="btn btn-blue" id="btnAntManual">âž• Tambah</button>
+          <button type="submit" class="btn btn-blue" id="btnAntManual">Tambah</button>
         </form>
         <details style="margin:14px 0">
-          <summary style="cursor:pointer;font-weight:700;color:var(--navy2);font-size:13px">âš¡ Trik: masuk otomatis tanpa copy-paste (MacroDroid / Tasker)</summary>
-          <p style="font-size:13px;color:var(--mut);margin-top:8px;line-height:1.6">WhatsApp tidak mengizinkan halaman web membaca isi grup secara langsung, tapi HP Android bisa dibantu aplikasi automasi: pasang <b>MacroDroid</b> atau <b>Tasker</b>, lalu buat aturan "notifikasi WhatsApp masuk â†’ buka alamat" dengan isi:<br><code style="background:var(--sky);padding:2px 6px;border-radius:6px">https://kisah27.github.io/DAELY-RIPORT/?antrian=ISI-PESAN</code><br>Halaman ini otomatis mengambil no polisi dari ISI-PESAN dan memasukkannya ke antrian di bawah â€” semua HP langsung ikut sama.</p>
+          <summary style="cursor:pointer;font-weight:700;color:var(--navy2);font-size:13px">Trik: masuk otomatis tanpa copy-paste (MacroDroid / Tasker)</summary>
+          <p style="font-size:13px;color:var(--mut);margin-top:8px;line-height:1.6">WhatsApp tidak mengizinkan halaman web membaca isi grup secara langsung, tapi HP Android bisa dibantu aplikasi automasi: pasang <b>MacroDroid</b> atau <b>Tasker</b>, lalu buat aturan "notifikasi WhatsApp masuk -> buka alamat" dengan isi:<br><code style="background:var(--sky);padding:2px 6px;border-radius:6px">https://kisah27.github.io/DAELY-RIPORT/?antrian=ISI-PESAN</code><br>Halaman ini otomatis mengambil no polisi dari ISI-PESAN dan memasukkannya ke antrian di bawah - semua HP langsung ikut sama.</p>
         </details>
         <div class="tblwrap">
           <table style="min-width:600px">
@@ -257,8 +257,8 @@ service cloud.firestore {
           </table>
         </div>
         <div class="exportbar">
-          <button class="btn btn-green" id="btnAntWa">ðŸ“± Kirim Antrian lewat WhatsApp</button>
-          <button class="btn btn-red" id="btnAntKosong">ðŸ—‘ï¸ Kosongkan Antrian</button>
+          <button class="btn btn-green" id="btnAntWa">Kirim Antrian lewat WhatsApp</button>
+          <button class="btn btn-red" id="btnAntKosong">Kosongkan Antrian</button>
         </div>
       </div>
     </section>
@@ -266,12 +266,12 @@ service cloud.firestore {
     <!-- ============ MASTER NO POLISI ============ -->
     <section class="panel" id="panel-polisi">
       <div class="card">
-        <h2>ðŸš› DAFTAR NO POLISI <span class="cnt" id="countPolisi">0</span></h2>
+        <h2>DAFTAR NO POLISI <span class="cnt" id="countPolisi">0</span></h2>
         <p class="desc">Daftar nomor polisi + kontraknya. Otomatis dipakai sebagai pilihan di Input Laporan. No polisi baru yang ditambah lewat Input Laporan juga masuk ke sini otomatis.</p>
         <form id="formPolisi" class="row" style="margin-bottom:14px">
           <input type="text" id="mpPolisi" placeholder="Contoh: B 9120 UYT" required>
           <select id="mpKontrak" required></select>
-          <button type="submit" class="btn btn-navy" id="btnMpAdd">âž• Tambah</button>
+          <button type="submit" class="btn btn-navy" id="btnMpAdd">Tambah</button>
         </form>
         <div class="tblwrap">
           <table>
@@ -285,11 +285,11 @@ service cloud.firestore {
     <!-- ============ MASTER TUJUAN ============ -->
     <section class="panel" id="panel-tujuan">
       <div class="card">
-        <h2>ðŸ“ DAFTAR TUJUAN <span class="cnt" id="countTujuan">0</span></h2>
+        <h2>DAFTAR TUJUAN <span class="cnt" id="countTujuan">0</span></h2>
         <p class="desc">Daftar tujuan pengiriman. Otomatis dipakai sebagai pilihan di Input Laporan. Tujuan baru yang ditambah lewat Input Laporan juga masuk ke sini otomatis.</p>
         <form id="formTujuan" class="row" style="margin-bottom:14px">
           <input type="text" id="mtNama" placeholder="Contoh: CILACAP" required>
-          <button type="submit" class="btn btn-navy" id="btnMtAdd">âž• Tambah</button>
+          <button type="submit" class="btn btn-navy" id="btnMtAdd">Tambah</button>
         </form>
         <div class="tblwrap">
           <table>
@@ -303,11 +303,11 @@ service cloud.firestore {
     <!-- ============ MASTER STATUS ============ -->
     <section class="panel" id="panel-status">
       <div class="card">
-        <h2>ðŸš¦ DAFTAR STATUS <span class="cnt" id="countStatus">0</span></h2>
+        <h2>DAFTAR STATUS <span class="cnt" id="countStatus">0</span></h2>
         <p class="desc">Daftar status unit untuk pilihan. Berisi bawaan: KIRIM, STANDBY, INAP, STORING PERBAIKAN. Saat NO POLISI dipilih di Input Laporan, STATUS otomatis mengikuti status terakhir unit tersebut.</p>
         <form id="formStatus" class="row" style="margin-bottom:14px">
           <input type="text" id="msNama" placeholder="Contoh: KIRIM" required>
-          <button type="submit" class="btn btn-navy" id="btnMsAdd">âž• Tambah</button>
+          <button type="submit" class="btn btn-navy" id="btnMsAdd">Tambah</button>
         </form>
         <div class="tblwrap">
           <table>
@@ -319,7 +319,7 @@ service cloud.firestore {
     </section>
   </main>
 
-  <footer>DAELY-RIPORT â€¢ SINAR MAJU JAYA â€¢ THE UNI VENUS SERANG BANTEN</footer>
+  <footer>DAELY-RIPORT - SINAR MAJU JAYA - THE UNI VENUS SERANG BANTEN</footer>
 </div>
 
 <!-- ============ MODAL TAMBAH CEPAT ============ -->
@@ -335,7 +335,7 @@ service cloud.firestore {
       </div>
       <div class="row">
         <button type="button" class="btn btn-ghost" id="qmCancel">Batal</button>
-        <button type="submit" class="btn btn-navy" id="qmOk">ðŸ’¾ Simpan</button>
+        <button type="submit" class="btn btn-navy" id="qmOk">Simpan</button>
       </div>
     </form>
   </div>
@@ -391,7 +391,7 @@ const sortName = (arr, key) => arr.slice().sort((a,b) => String(a[key]||'').loca
 const sortLaporan = arr => arr.slice().sort((a,b) => (b.tanggal||'').localeCompare(a.tanggal||'') || (b.createdAt||0) - (a.createdAt||0));
 const errText = e => {
   const code = e && e.code ? e.code : '';
-  if (code === 'permission-denied') return 'Penyimpanan online menolak akses (aturannya belum dibuka â€” ikuti langkah di banner).';
+  if (code === 'permission-denied') return 'Penyimpanan online menolak akses (aturannya belum dibuka - ikuti langkah di banner).';
   if (code === 'failed-precondition' || code === 'not-found') return 'Penyimpanan online belum dibuat di proyek ini (ikuti langkah di banner).';
   if (code.indexOf('unavailable') > -1 || code.indexOf('network') > -1) return 'Tidak ada koneksi internet.';
   return (e && e.message) ? e.message : 'Gagal menyambung ke penyimpanan online.';
@@ -459,8 +459,8 @@ function goOffline(reason) {
 function setSync(isOnline, reason) {
   $('syncDot').className = 'dot ' + (isOnline ? 'on' : 'off');
   $('syncText').textContent = isOnline
-    ? 'Terhubung â€” data langsung sama di semua HP'
-    : 'Mode Offline â€” data hanya di HP ini';
+    ? 'Terhubung - data langsung sama di semua HP'
+    : 'Mode Offline - data hanya di HP ini';
   $('offlineBanner').style.display = isOnline ? 'none' : 'block';
   if (reason) $('offlineReason').textContent = '(' + reason.trim() + ') ';
 }
@@ -484,20 +484,20 @@ async function deleteRec(col, id) {
 /* ================= DROPDOWN ================= */
 function fillKontrakSelects() {
   ['fKontrak', 'mpKontrak', 'qmKontrak'].forEach(id => {
-    const sel = $(id); let html = '<option value="">â€” Pilih Kontrak â€”</option>';
+    const sel = $(id); let html = '<option value="">Pilih Kontrak</option>';
     KONTRAK_LIST.forEach(k => html += '<option value="' + esc(k) + '">' + esc(k) + '</option>');
     sel.innerHTML = html;
   });
 }
 function renderPolisiSelect() { // dikelompokkan per kontrak (sama seperti tabel master): judul kontrak, di bawahnya no polisi miliknya
   const sel = $('fPolisi'); const cur = sel.value;
-  let html = '<option value="">â€” Pilih No Polisi â€”</option>';
+  let html = '<option value="">Pilih No Polisi</option>';
   grupPolisi(sortName(state.polisi, 'polisi')).forEach(g => {
     html += '<optgroup label="' + esc('# KONTRAK ' + (g.kontrak || '(BELUM DIISI)')) + '">';
     g.items.forEach(p => html += '<option value="' + esc(p.polisi) + '">' + esc(p.polisi) + '</option>');
     html += '</optgroup>';
   });
-  html += '<option value="__add__">âž• Tambah No Polisi Baruâ€¦</option>';
+  html += '<option value="__add__">Tambah No Polisi Baru...</option>';
   sel.innerHTML = html;
   if (pendingSelect && pendingSelect.col === 'polisi') {
     ensureOption(sel, pendingSelect.v); sel.value = pendingSelect.v; pendingSelect = null;
@@ -507,9 +507,9 @@ function renderPolisiSelect() { // dikelompokkan per kontrak (sama seperti tabel
 }
 function renderTujuanSelect() {
   const sel = $('fTujuan'); const cur = sel.value;
-  let html = '<option value="">â€” Pilih Tujuan â€”</option>';
+  let html = '<option value="">Pilih Tujuan</option>';
   sortName(state.tujuan, 'nama').forEach(t => html += '<option value="' + esc(t.nama) + '">' + esc(t.nama) + '</option>');
-  html += '<option value="__add__">âž• Tambah Tujuan Baruâ€¦</option>';
+  html += '<option value="__add__">Tambah Tujuan Baru...</option>';
   sel.innerHTML = html;
   if (pendingSelect && pendingSelect.col === 'tujuan') {
     ensureOption(sel, pendingSelect.v); sel.value = pendingSelect.v; pendingSelect = null; return;
@@ -518,7 +518,7 @@ function renderTujuanSelect() {
 }
 function renderStatusSelect() {
   const sel = $('fStatus'); const cur = sel.value;
-  let html = '<option value="">â€” Pilih Status â€”</option>';
+  let html = '<option value="">Pilih Status</option>';
   sortName(state.status, 'nama').forEach(s => html += '<option value="' + esc(s.nama) + '">' + esc(s.nama) + '</option>');
   sel.innerHTML = html;
   if (cur) { ensureOption(sel, cur); sel.value = cur; }
@@ -574,9 +574,9 @@ function renderRekap() {
           '<td>' + esc(r.tujuan) + '</td>' +
           '<td><span class="badge ' + badgeClass(r.status) + '">' + esc(r.status) + '</span></td>' +
           '<td><div class="aksi">' +
-          '<button class="btn mini btn-green" title="Kirim WhatsApp" onclick="waRow(\'' + r.id + '\')">ðŸ“±</button>' +
-          '<button class="btn mini btn-blue" title="Edit" onclick="editLaporan(\'' + r.id + '\')">âœï¸</button>' +
-          '<button class="btn mini btn-red" title="Hapus" onclick="hapusLaporan(\'' + r.id + '\')">ðŸ—‘ï¸</button>' +
+          '<button class="btn mini btn-green" title="Kirim WhatsApp" onclick="waRow(\'' + r.id + '\')">WA</button>' +
+          '<button class="btn mini btn-blue" title="Edit" onclick="editLaporan(\'' + r.id + '\')">Edit</button>' +
+          '<button class="btn mini btn-red" title="Hapus" onclick="hapusLaporan(\'' + r.id + '\')">Hapus</button>' +
           '</div></td></tr>'
         ).join('');
     }).join('');
@@ -587,11 +587,11 @@ function updateStats(rows) {
   const c = { KIRIM: 0, 'STANDBY': 0, 'INAP': 0, 'STORING PERBAIKAN': 0 };
   rows.forEach(r => { const k = (r.status || '').toUpperCase(); if (c[k] != null) c[k]++; });
   $('statsRow').innerHTML =
-    '<span class="chip c-navy">ðŸ“Š Total: ' + rows.length + '</span>' +
-    '<span class="chip c-green">ðŸšš KIRIM: ' + c.KIRIM + '</span>' +
-    '<span class="chip c-amber">ðŸ…¿ï¸ STANDBY: ' + c.STANDBY + '</span>' +
-    '<span class="chip c-blue">ðŸ›ï¸ INAP: ' + c.INAP + '</span>' +
-    '<span class="chip c-red">ðŸ”§ STORING PERBAIKAN: ' + c['STORING PERBAIKAN'] + '</span>';
+    '<span class="chip c-navy">Total: ' + rows.length + '</span>' +
+    '<span class="chip c-green">KIRIM: ' + c.KIRIM + '</span>' +
+    '<span class="chip c-amber">STANDBY: ' + c.STANDBY + '</span>' +
+    '<span class="chip c-blue">INAP: ' + c.INAP + '</span>' +
+    '<span class="chip c-red">STORING PERBAIKAN: ' + c['STORING PERBAIKAN'] + '</span>';
 }
 function grupPolisi(arr) { // kelompokkan per kontrak; yang belum diisi ditaruh paling bawah
   const map = {};
@@ -610,8 +610,8 @@ function renderPolisiTable() {
         '<tr><td>' + (i + 1) + '</td><td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
         '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(g.kontrak || '-') + '</td>' +
         '<td><div class="aksi">' +
-        '<button class="btn mini btn-blue" onclick="masterEdit(\'polisi\',\'' + p.id + '\')">âœï¸ Edit</button>' +
-        '<button class="btn mini btn-red" onclick="hapusMaster(\'polisi\',\'' + p.id + '\')">ðŸ—‘ï¸ Hapus</button>' +
+        '<button class="btn mini btn-blue" onclick="masterEdit(\'polisi\',\'' + p.id + '\')">Edit</button>' +
+        '<button class="btn mini btn-red" onclick="hapusMaster(\'polisi\',\'' + p.id + '\')">Hapus</button>' +
         '</div></td></tr>').join('');
   }).join('');
 }
@@ -623,8 +623,8 @@ function renderTujuanTable() {
     : arr.map((t, i) =>
       '<tr><td>' + (i + 1) + '</td><td style="font-weight:700;color:var(--navy)">' + esc(t.nama) + '</td>' +
       '<td><div class="aksi">' +
-      '<button class="btn mini btn-blue" onclick="masterEdit(\'tujuan\',\'' + t.id + '\')">âœï¸ Edit</button>' +
-      '<button class="btn mini btn-red" onclick="hapusMaster(\'tujuan\',\'' + t.id + '\')">ðŸ—‘ï¸ Hapus</button>' +
+      '<button class="btn mini btn-blue" onclick="masterEdit(\'tujuan\',\'' + t.id + '\')">Edit</button>' +
+      '<button class="btn mini btn-red" onclick="hapusMaster(\'tujuan\',\'' + t.id + '\')">Hapus</button>' +
       '</div></td></tr>').join('');
 }
 function renderStatusTable() {
@@ -635,8 +635,8 @@ function renderStatusTable() {
     : arr.map((s, i) =>
       '<tr><td>' + (i + 1) + '</td><td><span class="badge ' + badgeClass(s.nama) + '">' + esc(s.nama) + '</span></td>' +
       '<td><div class="aksi">' +
-      '<button class="btn mini btn-blue" onclick="masterEdit(\'status\',\'' + s.id + '\')">âœï¸ Edit</button>' +
-      '<button class="btn mini btn-red" onclick="hapusMaster(\'status\',\'' + s.id + '\')">ðŸ—‘ï¸ Hapus</button>' +
+      '<button class="btn mini btn-blue" onclick="masterEdit(\'status\',\'' + s.id + '\')">Edit</button>' +
+      '<button class="btn mini btn-red" onclick="hapusMaster(\'status\',\'' + s.id + '\')">Hapus</button>' +
       '</div></td></tr>').join('');
 }
 function renderAll() {
@@ -658,10 +658,10 @@ async function submitLaporan(e) {
   try {
     if (editLaporanId) {
       await updateRec('laporan', editLaporanId, d);
-      showToast('âœ” Laporan diperbarui & langsung sama di semua HP');
+      showToast('Laporan diperbarui & langsung sama di semua HP');
     } else {
       await addRec('laporan', d);
-      showToast('âœ” Laporan tersimpan & langsung sama di semua HP');
+      showToast('Laporan tersimpan & langsung sama di semua HP');
     }
   } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
   resetLaporanForm();
@@ -672,7 +672,7 @@ function resetLaporanForm() {
   $('fTanggal').value = todayStr();
   $('fPolisi').value = ''; $('fKontrak').value = ''; $('fTujuan').value = ''; $('fStatus').value = '';
   suppressAuto = false;
-  $('btnSimpan').textContent = 'ðŸ’¾ SIMPAN LAPORAN';
+  $('btnSimpan').textContent = 'SIMPAN LAPORAN';
   $('btnBatalEdit').style.display = 'none';
 }
 function editLaporan(id) {
@@ -686,14 +686,14 @@ function editLaporan(id) {
   ensureOption($('fStatus'), r.status); $('fStatus').value = r.status || '';
   suppressAuto = false;
   editLaporanId = id;
-  $('btnSimpan').textContent = 'âœ” UPDATE LAPORAN';
+  $('btnSimpan').textContent = 'UPDATE LAPORAN';
   $('btnBatalEdit').style.display = 'block';
   $('panel-input').scrollIntoView({ behavior: 'smooth' });
 }
 async function hapusLaporan(id) {
   const r = state.laporan.find(x => x.id === id); if (!r) return;
   if (!confirm('Hapus laporan ' + r.polisi + ' (' + fmtDate(r.tanggal) + ')?')) return;
-  try { await deleteRec('laporan', id); showToast('ðŸ—‘ï¸ Laporan dihapus'); }
+  try { await deleteRec('laporan', id); showToast('Laporan dihapus'); }
   catch (err) { alert('Gagal menghapus: ' + errText(err)); }
 }
 
@@ -702,14 +702,14 @@ function waOpen(text) { window.open('https://wa.me/?text=' + encodeURIComponent(
 function waRow(id) {
   const r = state.laporan.find(x => x.id === id); if (!r) return;
   const kon = String(r.kontrak || '').replace(/^KONTRAK\s+/i, '');
-  waOpen('ðŸšš LAPORAN UNIT - SINAR MAJU JAYA\n' +
-    'ðŸ“… ' + fmtDate(r.tanggal) + '\n' +
-    'ðŸš› ' + r.polisi + ' - ' + r.status + ' - ' + r.tujuan + (kon ? ' - ' + kon : ''));
+  waOpen('LAPORAN UNIT - SINAR MAJU JAYA\n' +
+    '' + fmtDate(r.tanggal) + '\n' +
+    '' + r.polisi + ' - ' + r.status + ' - ' + r.tujuan + (kon ? ' - ' + kon : ''));
 }
 function waRekap() {
   const rows = visibleLaporan();
   if (!rows.length) { alert('Tidak ada data untuk dikirim.'); return; }
-  let t = 'ðŸšš REKAP LAPORAN - SINAR MAJU JAYA\n';
+  let t = 'REKAP LAPORAN - SINAR MAJU JAYA\n';
   const emitGrup = arr => {
     grupLaporan(arr).forEach(g => {
       t += '\n# KONTRAK ' + (g.kontrak || '(BELUM DIISI)') + '\n';
@@ -720,11 +720,11 @@ function waRekap() {
     const groups = {};
     rows.forEach(r => { (groups[r.tanggal] = groups[r.tanggal] || []).push(r); });
     Object.keys(groups).sort().forEach(tg => {
-      t += '\nðŸ“… ' + fmtDate(tg) + '\n';
+      t += '\n' + fmtDate(tg) + '\n';
       emitGrup(groups[tg]);
     });
   } else {
-    t += 'ðŸ“… ' + fmtDate($('rTanggal').value) + '\n';
+    t += '' + fmtDate($('rTanggal').value) + '\n';
     emitGrup(rows);
   }
   t += '\nTotal: ' + rows.length + ' unit';
@@ -798,7 +798,7 @@ function previewAntrian(text, sumber) {
   antPreviewItems = found;
   const opts = st => ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
   box.style.display = 'block';
-  box.innerHTML = '<div class="pv-head">ðŸ“‹ Pratinjau â€” centang yang mau dimasukkan, atur status bila perlu, lalu klik SIMPAN:</div>' +
+  box.innerHTML = '<div class="pv-head">Pratinjau - centang yang mau dimasukkan, atur status bila perlu, lalu klik SIMPAN:</div>' +
     found.map((f, i) => {
       const k = normPol(f.polisi);
       const inAnt = state.antrian.some(a => normPol(a.polisi) === k);
@@ -809,8 +809,8 @@ function previewAntrian(text, sumber) {
         '<select class="sel-mini" onchange="antPreviewItems[' + i + '].status = this.value">' + opts(f.status) + '</select>' +
         '<span class="pv-tag ' + cls + '">' + tag + '</span></div>';
     }).join('') +
-    '<div class="row" style="margin-top:10px"><button type="button" class="btn btn-green" onclick="simpanPreview()">âœ” SIMPAN YANG DICENTANG</button>' +
-    '<button type="button" class="btn btn-ghost" onclick="batalPreview()">âœ– Batal</button></div>';
+    '<div class="row" style="margin-top:10px"><button type="button" class="btn btn-green" onclick="simpanPreview()">SIMPAN YANG DICENTANG</button>' +
+    '<button type="button" class="btn btn-ghost" onclick="batalPreview()">Batal</button></div>';
 }
 async function simpanPreview() {
   const checks = document.querySelectorAll('#antPreview .pv-check');
@@ -819,14 +819,14 @@ async function simpanPreview() {
   const r = await simpanAntrianList(items, 'TEMPEL');
   batalPreview();
   $('antText').value = '';
-  showToast('â³ ' + r.tambah + ' baru, ' + r.update + ' status naik' + (r.master ? ', ' + r.master + ' masuk daftar no polisi' : ''));
+  showToast('' + r.tambah + ' baru, ' + r.update + ' status naik' + (r.master ? ', ' + r.master + ' masuk daftar no polisi' : ''));
 }
 function batalPreview() { antPreviewItems = []; const b = $('antPreview'); if (b) { b.style.display = 'none'; b.innerHTML = ''; } }
 async function ingestAntrian(text, sumber) { // jalur otomatis via URL ?antrian= (tanpa pratinjau)
   const found = extractPolisi(text);
-  if (!found.length) { showToast('âš  Pesan otomatis: tidak ada no polisi dikenali'); return; }
+  if (!found.length) { showToast('Pesan otomatis: tidak ada no polisi dikenali'); return; }
   const r = await simpanAntrianList(found, sumber);
-  showToast('â³ +' + r.tambah + ' antrian, ' + r.update + ' status naik' + (r.master ? ', +' + r.master + ' daftar no polisi' : ''));
+  showToast('+' + r.tambah + ' antrian, ' + r.update + ' status naik' + (r.master ? ', +' + r.master + ' daftar no polisi' : ''));
 }
 async function submitAntrianManual(e) {
   e.preventDefault();
@@ -840,7 +840,7 @@ async function submitAntrianManual(e) {
   }
   catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
   $('antManual').value = '';
-  showToast('â³ ' + pol + ' masuk antrian â€” kontrak diisi nanti di master/input');
+  showToast('' + pol + ' masuk antrian - kontrak diisi nanti di master/input');
 }
 const KONTRAK_WARNA = [
   ['#dbeafe', '#1e3a8a'], ['#dcfce7', '#166534'], ['#fef3c7', '#92400e'],
@@ -859,7 +859,7 @@ function kontrakKey(v) { // "KONTRAK MIL/WING BOX" dan "MIL/WING BOX" jadi satu 
   return String(v || '').trim().toUpperCase().replace(/^KONTRAK\s+/, '');
 }
 function bandKontrak(kontrak, jumlah, colspan, c) { // baris pembatas antar kelompok kontrak
-  return '<tr class="ant-grp"><td colspan="' + colspan + '" style="background:' + c.bg + ';color:' + c.fg + ';border-top-color:' + c.fg + '"># KONTRAK ' + esc(kontrak || '(BELUM DIISI)') + ' <span style="font-weight:600;opacity:.75">Â· ' + jumlah + ' unit</span></td></tr>';
+  return '<tr class="ant-grp"><td colspan="' + colspan + '" style="background:' + c.bg + ';color:' + c.fg + ';border-top-color:' + c.fg + '"># KONTRAK ' + esc(kontrak || '(BELUM DIISI)') + ' <span style="font-weight:600;opacity:.75">- ' + jumlah + ' unit</span></td></tr>';
 }
 function grupAntrian(arr) {
   const map = {};
@@ -876,7 +876,7 @@ function renderAntrian() {
   $('countAntrian').textContent = arr.length + ' unit';
   const tb = $('tbodyAntrian');
   if (!arr.length) {
-    tb.innerHTML = '<tr class="empty"><td colspan="7">Antrian kosong. Tempel chat WhatsApp di atas â†’ AMBIL NO POLISI â†’ centang â†’ SIMPAN.</td></tr>';
+    tb.innerHTML = '<tr class="empty"><td colspan="7">Antrian kosong. Tempel chat WhatsApp di atas -> AMBIL NO POLISI -> centang -> SIMPAN.</td></tr>';
     return;
   }
   tb.innerHTML = grupAntrian(arr).map(g => {
@@ -892,26 +892,26 @@ function renderAntrian() {
         '<td class="nowrap">' + fmtWaktu(r.createdAt) + '</td>' +
         '<td>' + esc(r.sumber || '-') + '</td>' +
         '<td><div class="aksi">' +
-        '<button class="btn mini btn-blue" title="Buat laporan dari antrian" onclick="buatLaporanDariAntrian(\'' + r.id + '\')">ðŸ“</button>' +
-        '<button class="btn mini btn-red" title="Hapus" onclick="hapusAntrian(\'' + r.id + '\')">ðŸ—‘ï¸</button>' +
+        '<button class="btn mini btn-blue" title="Buat laporan dari antrian" onclick="buatLaporanDariAntrian(\'' + r.id + '\')">Laporan</button>' +
+        '<button class="btn mini btn-red" title="Hapus" onclick="hapusAntrian(\'' + r.id + '\')">Hapus</button>' +
         '</div></td></tr>';
       }).join('');
     }).join('');
 }
 async function setStatusAntrian(id, status) {
-  try { await updateRec('antrian', id, { status: status }); showToast('âœ” Status antrian diubah: ' + status); }
+  try { await updateRec('antrian', id, { status: status }); showToast('Status antrian diubah: ' + status); }
   catch (err) { alert('Gagal mengubah status: ' + errText(err)); }
 }
 async function hapusAntrian(id) {
   const r = state.antrian.find(x => x.id === id); if (!r) return;
   if (!confirm('Hapus ' + r.polisi + ' dari antrian?')) return;
-  try { await deleteRec('antrian', id); showToast('ðŸ—‘ï¸ Antrian dihapus'); }
+  try { await deleteRec('antrian', id); showToast('Antrian dihapus'); }
   catch (err) { alert('Gagal menghapus: ' + errText(err)); }
 }
 async function kosongkanAntrian() {
   if (!state.antrian.length) { alert('Antrian sudah kosong.'); return; }
   if (!confirm('Kosongkan SEMUA antrian (' + state.antrian.length + ' unit)?')) return;
-  try { for (const a of state.antrian.slice()) await deleteRec('antrian', a.id); showToast('ðŸ—‘ï¸ Antrian dikosongkan'); }
+  try { for (const a of state.antrian.slice()) await deleteRec('antrian', a.id); showToast('Antrian dikosongkan'); }
   catch (err) { alert('Gagal mengosongkan: ' + errText(err)); }
 }
 function buatLaporanDariAntrian(id) {
@@ -923,12 +923,12 @@ function buatLaporanDariAntrian(id) {
   suppressAuto = false;
   onPolisiChange();
   $('panel-input').scrollIntoView({ behavior: 'smooth' });
-  showToast('ðŸ“ ' + r.polisi + ' siap dilaporkan â€” lengkapi tujuan lalu simpan');
+  showToast('' + r.polisi + ' siap dilaporkan - lengkapi tujuan lalu simpan');
 }
 function waAntrian() {
   const arr = state.antrian.slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   if (!arr.length) { alert('Antrian masih kosong.'); return; }
-  let t = 'â³ ANTRIAN DO - SINAR MAJU JAYA\n';
+  let t = 'ANTRIAN DO - SINAR MAJU JAYA\n';
   grupAntrian(arr).forEach(g => {
     t += '\n# KONTRAK ' + (g.kontrak || '(BELUM DIISI)') + '\n';
     g.items.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
@@ -961,7 +961,7 @@ function writeExcel(baseName, sheets) {
       XLSX.utils.book_append_sheet(wb, ws, sh.name);
     });
     XLSX.writeFile(wb, baseName + '.xlsx');
-    showToast('â¬‡ File ' + baseName + '.xlsx diunduh');
+    showToast('File ' + baseName + '.xlsx diunduh');
   } else {
     const aoa = sheets[0].aoa;
     const csv = '\uFEFF' + 'sep=;\n' + aoa.map(r => r.map(c => {
@@ -1012,15 +1012,15 @@ async function submitPolisi(e) {
   try {
     if (editMaster && editMaster.col === 'polisi') {
       await updateRec('polisi', editMaster.id, { polisi: pol, kontrak: kon });
-      showToast('âœ” No polisi diperbarui');
+      showToast('No polisi diperbarui');
     } else {
       if (state.polisi.some(x => (x.polisi || '').toUpperCase() === pol)) { alert('No polisi sudah terdaftar!'); return; }
       await addRec('polisi', { polisi: pol, kontrak: kon });
-      showToast('âœ” No polisi ditambahkan');
+      showToast('No polisi ditambahkan');
     }
   } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
   $('mpPolisi').value = ''; $('mpKontrak').value = '';
-  editMaster = null; $('btnMpAdd').textContent = 'âž• Tambah';
+  editMaster = null; $('btnMpAdd').textContent = 'Tambah';
 }
 async function submitTujuan(e) {
   e.preventDefault();
@@ -1029,15 +1029,15 @@ async function submitTujuan(e) {
   try {
     if (editMaster && editMaster.col === 'tujuan') {
       await updateRec('tujuan', editMaster.id, { nama: nm });
-      showToast('âœ” Tujuan diperbarui');
+      showToast('Tujuan diperbarui');
     } else {
       if (state.tujuan.some(x => (x.nama || '').toUpperCase() === nm)) { alert('Tujuan sudah terdaftar!'); return; }
       await addRec('tujuan', { nama: nm });
-      showToast('âœ” Tujuan ditambahkan');
+      showToast('Tujuan ditambahkan');
     }
   } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
   $('mtNama').value = '';
-  editMaster = null; $('btnMtAdd').textContent = 'âž• Tambah';
+  editMaster = null; $('btnMtAdd').textContent = 'Tambah';
 }
 async function submitStatus(e) {
   e.preventDefault();
@@ -1046,40 +1046,40 @@ async function submitStatus(e) {
   try {
     if (editMaster && editMaster.col === 'status') {
       await updateRec('status', editMaster.id, { nama: nm });
-      showToast('âœ” Status diperbarui');
+      showToast('Status diperbarui');
     } else {
       if (state.status.some(x => (x.nama || '').toUpperCase() === nm)) { alert('Status sudah terdaftar!'); return; }
       await addRec('status', { nama: nm });
-      showToast('âœ” Status ditambahkan');
+      showToast('Status ditambahkan');
     }
   } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
   $('msNama').value = '';
-  editMaster = null; $('btnMsAdd').textContent = 'âž• Tambah';
+  editMaster = null; $('btnMsAdd').textContent = 'Tambah';
 }
 function masterEdit(col, id) {
   const arr = state[col]; const rec = arr.find(x => x.id === id); if (!rec) return;
   editMaster = { col: col, id: id };
   if (col === 'polisi') {
     setTab('polisi'); $('mpPolisi').value = rec.polisi || ''; $('mpKontrak').value = rec.kontrak || '';
-    $('btnMpAdd').textContent = 'âœ” Update';
+    $('btnMpAdd').textContent = 'Update';
   } else if (col === 'tujuan') {
-    setTab('tujuan'); $('mtNama').value = rec.nama || ''; $('btnMtAdd').textContent = 'âœ” Update';
+    setTab('tujuan'); $('mtNama').value = rec.nama || ''; $('btnMtAdd').textContent = 'Update';
   } else {
-    setTab('status'); $('msNama').value = rec.nama || ''; $('btnMsAdd').textContent = 'âœ” Update';
+    setTab('status'); $('msNama').value = rec.nama || ''; $('btnMsAdd').textContent = 'Update';
   }
 }
 async function hapusMaster(col, id) {
   const rec = state[col].find(x => x.id === id); if (!rec) return;
   const nm = col === 'polisi' ? rec.polisi : rec.nama;
   if (!confirm('Hapus "' + nm + '" dari master ' + col.toUpperCase() + '?')) return;
-  try { await deleteRec(col, id); showToast('ðŸ—‘ï¸ Data dihapus'); }
+  try { await deleteRec(col, id); showToast('Data dihapus'); }
   catch (err) { alert('Gagal menghapus: ' + errText(err)); }
 }
 
 /* ================= MODAL TAMBAH CEPAT ================= */
 function openQuick(type) {
   quickType = type;
-  $('qmTitle').textContent = type === 'polisi' ? 'ðŸš› Tambah No Polisi Baru' : 'ðŸ“ Tambah Tujuan Baru';
+  $('qmTitle').textContent = type === 'polisi' ? 'Tambah No Polisi Baru' : 'Tambah Tujuan Baru';
   $('qmLabel').textContent = type === 'polisi' ? 'NO POLISI' : 'TUJUAN';
   $('qmKontrakWrap').style.display = type === 'polisi' ? 'block' : 'none';
   $('qmKontrak').required = type === 'polisi';
@@ -1128,9 +1128,9 @@ function bindEvents() {
   $('fPolisi').addEventListener('change', () => { if (!suppressAuto) onPolisiChange(); });
   $('fTujuan').addEventListener('change', function () { if (this.value === '__add__') { this.value = ''; openQuick('tujuan'); } });
   $('fTanggal').addEventListener('click', function () { try { this.showPicker(); } catch (e) {} });
-  $('rTanggal').addEventListener('change', () => { showAll = false; $('btnShowAll').textContent = 'ðŸ“‹ Tampilkan Semua'; renderRekap(); });
-  $('btnShowAll').addEventListener('click', () => { showAll = !showAll; $('btnShowAll').textContent = showAll ? 'ðŸ“… Filter Tanggal' : 'ðŸ“‹ Tampilkan Semua'; renderRekap(); });
-  $('btnToday').addEventListener('click', () => { showAll = false; $('btnShowAll').textContent = 'ðŸ“‹ Tampilkan Semua'; $('rTanggal').value = todayStr(); renderRekap(); });
+  $('rTanggal').addEventListener('change', () => { showAll = false; $('btnShowAll').textContent = 'Tampilkan Semua'; renderRekap(); });
+  $('btnShowAll').addEventListener('click', () => { showAll = !showAll; $('btnShowAll').textContent = showAll ? 'Filter Tanggal' : 'Tampilkan Semua'; renderRekap(); });
+  $('btnToday').addEventListener('click', () => { showAll = false; $('btnShowAll').textContent = 'Tampilkan Semua'; $('rTanggal').value = todayStr(); renderRekap(); });
   $('btnWaRekap').addEventListener('click', waRekap);
   $('btnXlsHarian').addEventListener('click', exportHarian);
   $('btnXlsBulanan').addEventListener('click', exportBulanan);
@@ -1150,4 +1150,4 @@ function bindEvents() {
 init();
 </script>
 </body>
-</html>
+            </html>
