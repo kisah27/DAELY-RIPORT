@@ -231,7 +231,7 @@ service cloud.firestore {
     <section class="panel" id="panel-antrian">
       <div class="card">
         <h2>ANTRIAN DO <span class="cnt" id="countAntrian">0 unit</span></h2>
-        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. Aturan status: baris ada kata <b>masuk</b> -> <b>LOADING</b>; tidak ada kata <b>masuk</b> -> <b>ANTRIAN DO</b> (boleh diubah manual di tabel). No polisi yang disimpan otomatis masuk ke <b>Daftar No Polisi</b> juga - kontraknya diisi menyusul saat input laporan.</p>
+        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. Aturan status: baris ada kata <b>masuk</b> -> <b>LOADING</b>; tidak ada kata <b>masuk</b> -> <b>ANTRIAN DO</b> (boleh diubah manual di tabel). <b>Nomor antrian diambil otomatis dari chat kalau ditulis (contoh: antrian DO 12) dan tampil di kolom NO - berlaku semua kontrak.</b> Kalau chat tidak menulis nomor, kolom NO berisi tanda -. Nomor juga bisa diisi/diubah di pratinjau. No polisi yang disimpan otomatis masuk ke <b>Daftar No Polisi</b> juga - kontraknya diisi menyusul saat input laporan.</p>
         <div class="row" style="margin-bottom:12px">
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/BEFGPoZY0bGCB8KwEYy7HI?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 1</a>
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/CLRIPktR8dU32jwRl7EqBj?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 2</a>
@@ -244,6 +244,7 @@ service cloud.firestore {
         <div id="antPreview"></div>
         <form id="formAntrianManual" class="row" style="margin-top:14px">
           <input type="text" id="antManual" placeholder="Tambah manual, contoh: B 9120 UYT">
+          <input type="text" id="antManualNo" inputmode="numeric" maxlength="4" style="max-width:140px" placeholder="No antri (kalau ada)">
           <button type="submit" class="btn btn-blue" id="btnAntManual">Tambah</button>
         </form>
         <details style="margin:14px 0">
@@ -746,20 +747,31 @@ function detectStatusAntrian(line) {
   return /\bmasuk\b/.test(s) ? 'LOADING' : 'ANTRIAN DO';
 }
 const normPol = v => String(v || '').toUpperCase().replace(/\s+/g, '');
+function nomorAntri(line) { // nomor antrian dari chat, mis. "B 9344 KSA antrian DO 12" -> "12"
+  const up = String(line || '').toUpperCase().replace(/\s+/g, ' ');
+  const re = /(?:ANTRIAN|QUEUE|NOMOR|NO\.?|URUT)\s*(?:DO)?\s*\.?\s*#?\s*[:=-]?\s*(\d{1,4})\b|\bDO\s*\.?\s*#?\s*[:=-]?\s*(\d{1,4})\b/g;
+  let m;
+  while ((m = re.exec(up))) {
+    if (/KONTRAK\s*$/.test(up.slice(0, m.index))) continue; // "KONTRAK DO 123" itu no kontrak, bukan no antrian
+    return m[1] || m[2] || '';
+  }
+  return '';
+}
 function extractPolisi(text) {
   const reFull = /\b([A-Z]{1,2})[\s.\-]*(\d{1,4})[\s.\-]*([A-Z]{1,3})\b/g;
   const reShort = /\b([A-Z]{1,2})[\s.\-]*(\d{3,4})\b(?!\s?[A-Z])/g;
   const out = [];
   String(text || '').split(/\r?\n/).forEach(line => {
     const up = line.toUpperCase().replace(/\s+/g, ' ');
+    const no = nomorAntri(line);
     let m, n = 0;
     while ((m = reFull.exec(up))) {
       // jangan ambil nomor kontrak (mis. "KONTRAK DO 123 ABC") sebagai no polisi
       if (/(\bKONTRAK|\bNO\.?\s*DO|\bDO\s*NO)[^A-Z]*$/.test(up.slice(Math.max(0, m.index - 18), m.index))) continue;
-      out.push({ polisi: m[1] + ' ' + m[2] + ' ' + m[3], status: detectStatusAntrian(line) }); n++;
+      out.push({ polisi: m[1] + ' ' + m[2] + ' ' + m[3], status: detectStatusAntrian(line), no: no }); n++;
     }
     if (!n) { // baris tanpa no polisi lengkap: coba bentuk pendek "B 9526" (chat terpotong baris)
-      while ((m = reShort.exec(up))) out.push({ polisi: m[1] + ' ' + m[2], status: detectStatusAntrian(line) });
+      while ((m = reShort.exec(up))) out.push({ polisi: m[1] + ' ' + m[2], status: detectStatusAntrian(line), no: no });
     }
   });
   return out;
@@ -777,9 +789,14 @@ async function simpanAntrianList(items, sumber) {
       const f = best[k];
       const ex = state.antrian.find(a => normPol(a.polisi) === k);
       if (ex) {
-        if (rank(f.status) > rank(ex.status || 'ANTRIAN DO')) { await updateRec('antrian', ex.id, { status: f.status }); update++; }
+        const upd = {};
+        if (rank(f.status) > rank(ex.status || 'ANTRIAN DO')) upd.status = f.status;
+        f.no = String(f.no || '').replace(/\D/g, '');
+        if (f.no && String(ex.noAntri || '') !== f.no) upd.noAntri = f.no;
+        if (upd.status || upd.noAntri) { await updateRec('antrian', ex.id, upd); update++; }
       } else {
-        await addRec('antrian', { polisi: f.polisi, status: f.status, sumber: sumber, tanggal: todayStr() });
+        f.no = String(f.no || '').replace(/\D/g, '');
+        await addRec('antrian', { polisi: f.polisi, status: f.status, sumber: sumber, tanggal: todayStr(), noAntri: f.no });
         tambah++;
       }
       if (!state.polisi.some(p => normPol(p.polisi) === k)) { await addRec('polisi', { polisi: f.polisi, kontrak: '' }); master++; }
@@ -798,7 +815,7 @@ function previewAntrian(text, sumber) {
   antPreviewItems = found;
   const opts = st => ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
   box.style.display = 'block';
-  box.innerHTML = '<div class="pv-head">Pratinjau - centang yang mau dimasukkan, atur status bila perlu, lalu klik SIMPAN:</div>' +
+  box.innerHTML = '<div class="pv-head">Pratinjau - centang yang mau dimasukkan, isi/ubah nomor antrian & status bila perlu, lalu klik SIMPAN:</div>' +
     found.map((f, i) => {
       const k = normPol(f.polisi);
       const inAnt = state.antrian.some(a => normPol(a.polisi) === k);
@@ -806,6 +823,7 @@ function previewAntrian(text, sumber) {
       const tag = !inMaster ? 'POLISI BARU' : (!inAnt ? 'BARU' : 'SUDAH ADA');
       const cls = !inMaster ? 'tag-master' : (!inAnt ? 'tag-baru' : 'tag-exist');
       return '<div class="pv-row"><label><input type="checkbox" class="pv-check" checked> <span class="pv-pol">' + esc(f.polisi) + '</span></label>' +
+        '<input type="text" inputmode="numeric" maxlength="4" class="pv-no" style="width:72px;flex:none" title="Nomor antrian" placeholder="No antri" value="' + esc(f.no || '') + '" oninput="antPreviewItems[' + i + '].no = this.value">' +
         '<select class="sel-mini" onchange="antPreviewItems[' + i + '].status = this.value">' + opts(f.status) + '</select>' +
         '<span class="pv-tag ' + cls + '">' + tag + '</span></div>';
     }).join('') +
@@ -819,27 +837,29 @@ async function simpanPreview() {
   const r = await simpanAntrianList(items, 'TEMPEL');
   batalPreview();
   $('antText').value = '';
-  showToast('' + r.tambah + ' baru, ' + r.update + ' status naik' + (r.master ? ', ' + r.master + ' masuk daftar no polisi' : ''));
+  showToast('' + r.tambah + ' baru, ' + r.update + ' diperbarui' + (r.master ? ', ' + r.master + ' masuk daftar no polisi' : ''));
 }
 function batalPreview() { antPreviewItems = []; const b = $('antPreview'); if (b) { b.style.display = 'none'; b.innerHTML = ''; } }
 async function ingestAntrian(text, sumber) { // jalur otomatis via URL ?antrian= (tanpa pratinjau)
   const found = extractPolisi(text);
   if (!found.length) { showToast('Pesan otomatis: tidak ada no polisi dikenali'); return; }
   const r = await simpanAntrianList(found, sumber);
-  showToast('+' + r.tambah + ' antrian, ' + r.update + ' status naik' + (r.master ? ', +' + r.master + ' daftar no polisi' : ''));
+  showToast('+' + r.tambah + ' antrian, ' + r.update + ' diperbarui' + (r.master ? ', +' + r.master + ' daftar no polisi' : ''));
 }
 async function submitAntrianManual(e) {
   e.preventDefault();
   const pol = $('antManual').value.trim().toUpperCase().replace(/\s+/g, ' ');
   if (!pol) return;
   const key = pol.replace(/\s+/g, '');
+  const no = $('antManualNo').value.trim().replace(/\D/g, '');
   if (state.antrian.some(a => normPol(a.polisi) === key)) { alert(pol + ' sudah ada di antrian!'); return; }
   try {
-    await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', sumber: 'MANUAL', tanggal: todayStr() });
+    await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', sumber: 'MANUAL', tanggal: todayStr(), noAntri: no });
     if (!state.polisi.some(p => normPol(p.polisi) === key)) await addRec('polisi', { polisi: pol, kontrak: '' });
   }
   catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
   $('antManual').value = '';
+  $('antManualNo').value = '';
   showToast('' + pol + ' masuk antrian - kontrak diisi nanti di master/input');
 }
 const KONTRAK_WARNA = [
@@ -885,7 +905,7 @@ function renderAntrian() {
       g.items.map((r, i) => {
         const st = ANT_STATUS.indexOf(r.status) > -1 ? r.status : 'ANTRIAN DO';
         const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
-        return '<tr><td>' + (i + 1) + '</td>' +
+        return '<tr><td style="font-weight:800">' + (r.noAntri ? esc(String(r.noAntri)) : '-') + '</td>' +
         '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
         '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(r.kontrak || '-') + '</td>' +
         '<td><select class="sel-mini" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
@@ -931,7 +951,7 @@ function waAntrian() {
   let t = 'ANTRIAN DO - SINAR MAJU JAYA\n';
   grupAntrian(arr).forEach(g => {
     t += '\n# KONTRAK ' + (g.kontrak || '(BELUM DIISI)') + '\n';
-    g.items.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
+    g.items.forEach((r, i) => { t += (r.noAntri ? r.noAntri : (i + 1)) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
   });
   t += '\nTotal: ' + arr.length + ' unit';
   waOpen(t);
@@ -1150,4 +1170,4 @@ function bindEvents() {
 init();
 </script>
 </body>
-        </html>
+                                                    </html>
