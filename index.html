@@ -891,7 +891,7 @@ function renderAntrian() {
     return bandKontrak(g.kontrak, g.items.length, 7, c) +
       g.items.map(r => {
         const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === 'ANTRIAN DO' ? ' selected' : '') + '>' + s + '</option>').join('');
-        return '<tr><td style="font-weight:800">' + (no[r.id] || '-') + '</td>' +
+        return '<tr><td style="font-weight:800">' + no[r.id] + '</td>' +
         '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
         '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(r.kontrak || '-') + '</td>' +
         '<td><select class="sel-mini" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
@@ -942,7 +942,7 @@ function waAntrian() {
   let t = 'ANTRIAN DO - SINAR MAJU JAYA\n';
   grupAntrian(arr).forEach(g => {
     t += '\n# KONTRAK ' + (g.kontrak || '(BELUM DIISI)') + '\n';
-    g.items.forEach(r => { t += (no[r.id] || '-') + '. ' + r.polisi + ' - ANTRIAN DO\n'; });
+    g.items.forEach(r => { t += no[r.id] + '. ' + r.polisi + ' - ANTRIAN DO\n'; });
   });
   t += '\nTotal: ' + arr.length + ' unit';
   waOpen(t);
@@ -1161,4 +1161,4 @@ function bindEvents() {
 init();
 </script>
 </body>
-</html>
+            </html>
