@@ -368,8 +368,28 @@ const KONTRAK_LIST = [
   "KONTRAK SDD/CDE",
   "KONTRAK SDD/CDD"
 ];
-const STATUS_DEFAULT = ["KIRIM", "STANDBY", "INAP", "STORING PERBAIKAN"];
-const STATUS_IDS = { "KIRIM":"st-kirim", "STANDBY":"st-standby", "INAP":"st-inap", "STORING PERBAIKAN":"st-storing-perbaikan" };
+const STATUS_DEFAULT = [
+  "INAP",
+  "KIRIM",
+  "KIRIMAN PENDING (INFO PLANER)",
+  "KIRIMAN PENDING (PERMINTAAN CUSTOMER)",
+  "KIRIMAN PENDING (SELESAI MUAT KE SOREAN)",
+  "LOADING/PROSES MUAT",
+  "STANDBY/TUNGGU DO",
+  "STORING PERBAIKAN",
+  "UNIT DI BACKUP"
+];
+const STATUS_IDS = {
+  "INAP": "st-inap",
+  "KIRIM": "st-kirim",
+  "KIRIMAN PENDING (INFO PLANER)": "st-kiriman-pending-info-planer",
+  "KIRIMAN PENDING (PERMINTAAN CUSTOMER)": "st-kiriman-pending-permintaan-customer",
+  "KIRIMAN PENDING (SELESAI MUAT KE SOREAN)": "st-kiriman-pending-selesai-muat-ke-sorean",
+  "LOADING/PROSES MUAT": "st-loading-proses-muat",
+  "STANDBY/TUNGGU DO": "st-standby-tunggu-do",
+  "STORING PERBAIKAN": "st-storing-perbaikan",
+  "UNIT DI BACKUP": "st-unit-di-backup"
+};
 const COLS = ["polisi", "tujuan", "status", "laporan", "antrian"];
 
 const state = { polisi:[], tujuan:[], status:[], laporan:[], antrian:[] };
@@ -419,9 +439,9 @@ async function init() {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     const timeout = new Promise((_, rej) => setTimeout(() => rej({ code: 'unavailable' }), 9000));
-    const snap = await Promise.race([db.collection('status').limit(1).get(), timeout]);
+    const snap = await Promise.race([db.collection('status').get(), timeout]);
     online = true; setSync(true);
-    if (snap.empty) await seedStatusOnline();
+    await ensureStatusDefault(snap); // samakan daftar status standar di semua HP
     subscribeAll();
   } catch (e) {
     goOffline(errText(e) + ' ');
@@ -429,10 +449,27 @@ async function init() {
   renderAll();
   handleAntrianUrl();
 }
-function seedStatusOnline() {
+const STATUS_LAMA_GANTI = { "st-standby": "STANDBY" }; // status bawaan lama yang sudah diganti nama baru (STANDBY/TUNGGU DO)
+async function ensureStatusDefault(snap) { // pasang status standar yang belum ada, tanpa dobel, di semua HP
+  const byId = {}, byName = {};
+  snap.forEach(d => {
+    const nama = String((d.data() || {}).nama || '');
+    const kunci = nama.trim().toUpperCase();
+    byId[d.id] = nama;
+    if (kunci) byName[kunci] = d.id;
+  });
   const batch = db.batch();
-  STATUS_DEFAULT.forEach(n => batch.set(db.collection('status').doc(STATUS_IDS[n]), { nama: n, createdAt: Date.now() }));
-  return batch.commit().catch(() => {});
+  let ubah = false;
+  STATUS_DEFAULT.forEach(n => {
+    const idBaku = STATUS_IDS[n];
+    const idLain = byName[n.toUpperCase()];
+    if (idLain && idLain !== idBaku && byId[idBaku]) { batch.delete(db.collection('status').doc(idBaku)); ubah = true; } // ada dua nama sama: sisakan satu
+    else if (!idLain && !byId[idBaku]) { batch.set(db.collection('status').doc(idBaku), { nama: n, createdAt: Date.now() }); ubah = true; } // belum ada: pasang
+  });
+  Object.keys(STATUS_LAMA_GANTI).forEach(id => { // status bawaan lama: hapus hanya kalau teksnya masih persis bawaan
+    if (byId[id] === STATUS_LAMA_GANTI[id]) { batch.delete(db.collection('status').doc(id)); ubah = true; }
+  });
+  if (ubah) await batch.commit().catch(() => {});
 }
 function seedStatusLocal() {
   if (state.status.length === 0) {
@@ -539,9 +576,9 @@ function onPolisiChange() {
 function badgeClass(s) {
   s = (s || '').toUpperCase();
   if (s === 'KIRIM') return 'b-green';
-  if (s === 'STANDBY') return 'b-amber';
-  if (s === 'INAP') return 'b-blue';
-  if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'b-red';
+  if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1 || s.indexOf('PENDING') > -1) return 'b-red';
+  if (s.indexOf('LOADING') > -1 || s.indexOf('MUAT') > -1 || s.indexOf('STANDBY') > -1) return 'b-amber';
+  if (s.indexOf('INAP') > -1 || s.indexOf('BACKUP') > -1) return 'b-blue';
   return 'b-gray';
 }
 function visibleLaporan() {
@@ -993,18 +1030,20 @@ function exportBulanan() {
   if (!m) { alert('Pilih bulan terlebih dahulu.'); return; }
   const rows = sortLaporan(state.laporan.filter(l => (l.tanggal || '').startsWith(m)));
   if (!rows.length) { alert('Tidak ada data pada bulan ' + m + '.'); return; }
+  const daftarStatus = sortName(state.status, 'nama').map(s => String(s.nama || '')).filter(Boolean);
   const per = {};
   rows.forEach(r => {
     const k = r.polisi || '-';
-    per[k] = per[k] || { polisi: k, KIRIM: 0, STANDBY: 0, INAP: 0, 'STORING PERBAIKAN': 0, total: 0 };
+    per[k] = per[k] || { polisi: k, hitung: {}, total: 0 };
     const o = per[k];
-    const s = (r.status || '').toUpperCase();
-    if (o[s] != null) o[s]++;
+    const s = String(r.status || '').trim().toUpperCase();
+    const cocok = daftarStatus.find(n => n.trim().toUpperCase() === s);
+    if (cocok) o.hitung[cocok] = (o.hitung[cocok] || 0) + 1;
     o.total++;
   });
-  const aoa2 = [['NO POLISI', 'KIRIM', 'STANDBY', 'INAP', 'STORING PERBAIKAN', 'TOTAL']];
+  const aoa2 = [['NO POLISI'].concat(daftarStatus).concat(['TOTAL'])];
   Object.values(per).sort((a, b) => a.polisi.localeCompare(b.polisi))
-    .forEach(o => aoa2.push([o.polisi, o.KIRIM, o.STANDBY, o.INAP, o['STORING PERBAIKAN'], o.total]));
+    .forEach(o => aoa2.push([o.polisi].concat(daftarStatus.map(n => o.hitung[n] || 0)).concat([o.total])));
   writeExcel('Rekap_Bulanan_' + m, [
     { name: 'Laporan', aoa: rowsToAoa(rows) },
     { name: 'Rekap Per Unit', aoa: aoa2 }
