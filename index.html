@@ -304,7 +304,7 @@ service cloud.firestore {
     <section class="panel" id="panel-status">
       <div class="card">
         <h2>DAFTAR STATUS <span class="cnt" id="countStatus">0</span></h2>
-        <p class="desc">Daftar status unit untuk pilihan. Berisi bawaan: KIRIM, STANDBY, INAP, STORING PERBAIKAN. Saat NO POLISI dipilih di Input Laporan, STATUS otomatis mengikuti status terakhir unit tersebut.</p>
+        <p class="desc">Daftar status unit untuk pilihan. Berisi bawaan: KIRIM, STANDBY, INAP, STORING PERBAIKAN, MUAT. Saat NO POLISI dipilih di Input Laporan, STATUS otomatis mengikuti status terakhir unit tersebut.</p>
         <form id="formStatus" class="row" style="margin-bottom:14px">
           <input type="text" id="msNama" placeholder="Contoh: KIRIM" required>
           <button type="submit" class="btn btn-navy" id="btnMsAdd">Tambah</button>
@@ -368,8 +368,8 @@ const KONTRAK_LIST = [
   "KONTRAK SDD/CDE",
   "KONTRAK SDD/CDD"
 ];
-const STATUS_DEFAULT = ["KIRIM", "STANDBY", "INAP", "STORING PERBAIKAN"];
-const STATUS_IDS = { "KIRIM":"st-kirim", "STANDBY":"st-standby", "INAP":"st-inap", "STORING PERBAIKAN":"st-storing-perbaikan" };
+const STATUS_DEFAULT = ["KIRIM", "STANDBY", "INAP", "STORING PERBAIKAN",MUAT];
+const STATUS_IDS = { "KIRIM":"st-kirim", "STANDBY":"st-standby", "INAP":"st-inap", "STORING PERBAIKAN":"st-storing-perbaikan","MUAT":st-muat };
 const COLS = ["polisi", "tujuan", "status", "laporan", "antrian"];
 
 const state = { polisi:[], tujuan:[], status:[], laporan:[], antrian:[] };
