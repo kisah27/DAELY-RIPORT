@@ -205,7 +205,7 @@ service cloud.firestore {
     <section class="panel" id="panel-rekap">
       <div class="card">
         <h2>REKAP LAPORAN <span class="cnt" id="rekapCount">0 data</span></h2>
-        <p class="desc">Rekap tersimpan permanen dan dikelompokkan per KONTRAK (ada baris pembatas berwarna, sama seperti Antrian DO). Setiap baris bisa dikirim lewat WhatsApp, diedit, atau dihapus.</p>
+        <p class="desc"><b>Papan status semua unit</b> - susunan no polisinya sama persis dengan Daftar No Polisi. Status tiap unit otomatis mengikuti Antrian DO: mengantri DO = STANDBY, klik MUAT/KIRIM di antrian = MUAT/KIRIM. <b>Unit berstatus KIRIM/MUAT-KIRIM yang tidak daftar lagi otomatis jadi INAP mulai jam 22:00 malam pada hari yang sama</b> (tujuan tetap seperti saat KIRIM). Unit yang tidak ada perubahan dalam antrian DO selama 24 jam otomatis STANDBY. STORING PERBAIKAN tidak berubah sampai unit didaftarkan lagi ke Antrian DO. Tujuan boleh kosong atau diisi manual lewat tombol TUJUAN di tiap baris. Tombol Excel di bawah tetap mengikuti filter tanggal laporan.</p>
         <div class="chips" id="statsRow"></div>
         <div class="filterbar">
           <div><label for="rTanggal">TANGGAL</label><input type="date" id="rTanggal"></div>
@@ -215,7 +215,7 @@ service cloud.firestore {
         </div>
         <div class="tblwrap">
           <table>
-            <thead><tr><th>NO</th><th>TANGGAL</th><th>NO POLISI</th><th>KONTRAK</th><th>TUJUAN</th><th>STATUS</th><th>AKSI</th></tr></thead>
+            <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>TUJUAN</th><th>STATUS</th><th>AKSI</th></tr></thead>
             <tbody id="tbodyRekap"></tbody>
           </table>
         </div>
@@ -231,7 +231,7 @@ service cloud.firestore {
     <section class="panel" id="panel-antrian">
       <div class="card">
         <h2>ANTRIAN DO <span class="cnt" id="countAntrian">0 unit</span></h2>
-        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. <b>Antrian = barisan bernomor untuk SETIAP kontrak: nomor mulai lagi dari 1 di tiap kontrak, no 1 paling lama menunggu, antrian baru selalu dapat nomor paling bawah (2, 3, dan seterusnya).</b> Begitu satu antrian diubah statusnya jadi LOADING / SELESAI MUAT / BERANGKAT, barisnya otomatis terhapus dan nomor di bawahnya langsung naik (no 2 jadi no 1, dst). Baris chat yang ada kata <b>masuk</b> dianggap sudah loading - tidak masuk barisan, no polisinya cukup dicatat di Daftar No Polisi. Kontrak diambil otomatis dari Daftar No Polisi - diisi menyusul saat input laporan.</p>
+        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. <b>Antrian = barisan bernomor untuk SETIAP kontrak: nomor mulai lagi dari 1 di tiap kontrak, no 1 paling lama menunggu, antrian baru selalu dapat nomor paling bawah (2, 3, dan seterusnya).</b> Baris antrian TIDAK terhapus: begitu diubah jadi MUAT/KIRIM, barisnya pindah ke nomor paling bawah dengan status MUAT/KIRIM. Begitu no polisinya muncul lagi di hasil tempel WhatsApp, statusnya kembali ANTRIAN DO dan dapat nomor tunggu paling bawah. Baris chat yang ada kata <b>masuk</b> langsung jadi MUAT/KIRIM. Di setiap kepala kontrak ada tombol <b>WA</b> untuk mengirim daftar antrian kontrak itu saja. No polisi baru di Daftar No Polisi otomatis masuk antrian sesuai kontraknya, dan sebaliknya no polisi baru di antrian otomatis tercatat di Daftar No Polisi.</p>
         <div class="row" style="margin-bottom:12px">
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/BEFGPoZY0bGCB8KwEYy7HI?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 1</a>
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/CLRIPktR8dU32jwRl7EqBj?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 2</a>
@@ -252,7 +252,7 @@ service cloud.firestore {
         </details>
         <div class="tblwrap">
           <table style="min-width:600px">
-            <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>STATUS</th><th>WAKTU MASUK</th><th>SUMBER</th><th>AKSI</th></tr></thead>
+            <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>STATUS</th><th>WAKTU MASUK</th><th>AKSI</th></tr></thead>
             <tbody id="tbodyAntrian"></tbody>
           </table>
         </div>
@@ -267,7 +267,7 @@ service cloud.firestore {
     <section class="panel" id="panel-polisi">
       <div class="card">
         <h2>DAFTAR NO POLISI <span class="cnt" id="countPolisi">0</span></h2>
-        <p class="desc">Daftar nomor polisi + kontraknya. Otomatis dipakai sebagai pilihan di Input Laporan. No polisi baru yang ditambah lewat Input Laporan juga masuk ke sini otomatis.</p>
+        <p class="desc">Daftar nomor polisi + kontraknya. Otomatis dipakai sebagai pilihan di Input Laporan. No polisi baru yang ditambah di sini <b>langsung masuk Antrian DO sesuai kontraknya</b>, dan sebaliknya no polisi baru dari Antrian DO otomatis masuk ke daftar ini.</p>
         <form id="formPolisi" class="row" style="margin-bottom:14px">
           <input type="text" id="mpPolisi" placeholder="Contoh: B 9120 UYT" required>
           <select id="mpKontrak" required></select>
@@ -368,28 +368,8 @@ const KONTRAK_LIST = [
   "KONTRAK SDD/CDE",
   "KONTRAK SDD/CDD"
 ];
-const STATUS_DEFAULT = [
-  "INAP",
-  "KIRIM",
-  "KIRIMAN PENDING (INFO PLANER)",
-  "KIRIMAN PENDING (PERMINTAAN CUSTOMER)",
-  "KIRIMAN PENDING (SELESAI MUAT KE SOREAN)",
-  "LOADING/PROSES MUAT",
-  "STANDBY/TUNGGU DO",
-  "STORING PERBAIKAN",
-  "UNIT DI BACKUP"
-];
-const STATUS_IDS = {
-  "INAP": "st-inap",
-  "KIRIM": "st-kirim",
-  "KIRIMAN PENDING (INFO PLANER)": "st-kiriman-pending-info-planer",
-  "KIRIMAN PENDING (PERMINTAAN CUSTOMER)": "st-kiriman-pending-permintaan-customer",
-  "KIRIMAN PENDING (SELESAI MUAT KE SOREAN)": "st-kiriman-pending-selesai-muat-ke-sorean",
-  "LOADING/PROSES MUAT": "st-loading-proses-muat",
-  "STANDBY/TUNGGU DO": "st-standby-tunggu-do",
-  "STORING PERBAIKAN": "st-storing-perbaikan",
-  "UNIT DI BACKUP": "st-unit-di-backup"
-};
+const STATUS_DEFAULT = ["KIRIM", "STANDBY", "INAP", "STORING PERBAIKAN"];
+const STATUS_IDS = { "KIRIM":"st-kirim", "STANDBY":"st-standby", "INAP":"st-inap", "STORING PERBAIKAN":"st-storing-perbaikan" };
 const COLS = ["polisi", "tujuan", "status", "laporan", "antrian"];
 
 const state = { polisi:[], tujuan:[], status:[], laporan:[], antrian:[] };
@@ -439,37 +419,21 @@ async function init() {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     const timeout = new Promise((_, rej) => setTimeout(() => rej({ code: 'unavailable' }), 9000));
-    const snap = await Promise.race([db.collection('status').get(), timeout]);
+    const snap = await Promise.race([db.collection('status').limit(1).get(), timeout]);
     online = true; setSync(true);
-    await ensureStatusDefault(snap); // samakan daftar status standar di semua HP
+    if (snap.empty) await seedStatusOnline();
     subscribeAll();
   } catch (e) {
     goOffline(errText(e) + ' ');
   }
   renderAll();
   handleAntrianUrl();
+  setInterval(() => { if (state.polisi.length) renderRekap(); }, 60000); // papan status REKAP menyegarkan sendiri (aturan jam 22:00)
 }
-const STATUS_LAMA_GANTI = { "st-standby": "STANDBY" }; // status bawaan lama yang sudah diganti nama baru (STANDBY/TUNGGU DO)
-async function ensureStatusDefault(snap) { // pasang status standar yang belum ada, tanpa dobel, di semua HP
-  const byId = {}, byName = {};
-  snap.forEach(d => {
-    const nama = String((d.data() || {}).nama || '');
-    const kunci = nama.trim().toUpperCase();
-    byId[d.id] = nama;
-    if (kunci) byName[kunci] = d.id;
-  });
+function seedStatusOnline() {
   const batch = db.batch();
-  let ubah = false;
-  STATUS_DEFAULT.forEach(n => {
-    const idBaku = STATUS_IDS[n];
-    const idLain = byName[n.toUpperCase()];
-    if (idLain && idLain !== idBaku && byId[idBaku]) { batch.delete(db.collection('status').doc(idBaku)); ubah = true; } // ada dua nama sama: sisakan satu
-    else if (!idLain && !byId[idBaku]) { batch.set(db.collection('status').doc(idBaku), { nama: n, createdAt: Date.now() }); ubah = true; } // belum ada: pasang
-  });
-  Object.keys(STATUS_LAMA_GANTI).forEach(id => { // status bawaan lama: hapus hanya kalau teksnya masih persis bawaan
-    if (byId[id] === STATUS_LAMA_GANTI[id]) { batch.delete(db.collection('status').doc(id)); ubah = true; }
-  });
-  if (ubah) await batch.commit().catch(() => {});
+  STATUS_DEFAULT.forEach(n => batch.set(db.collection('status').doc(STATUS_IDS[n]), { nama: n, createdAt: Date.now() }));
+  return batch.commit().catch(() => {});
 }
 function seedStatusLocal() {
   if (state.status.length === 0) {
@@ -566,6 +530,7 @@ function onPolisiChange() {
   if (!v) return;
   const p = state.polisi.find(x => x.polisi === v);
   if (p && p.kontrak) { suppressAuto = true; $('fKontrak').value = p.kontrak; suppressAuto = false; }
+  if (p && p.tujuan) { suppressAuto = true; ensureOption($('fTujuan'), p.tujuan); $('fTujuan').value = p.tujuan; suppressAuto = false; } // tujuan terakhir unit ikut terisi
   const last = sortLaporan(state.laporan.filter(l => l.polisi === v))[0];
   if (last && last.status && state.status.some(s => s.nama === last.status)) {
     suppressAuto = true; $('fStatus').value = last.status; suppressAuto = false;
@@ -576,9 +541,9 @@ function onPolisiChange() {
 function badgeClass(s) {
   s = (s || '').toUpperCase();
   if (s === 'KIRIM') return 'b-green';
-  if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1 || s.indexOf('PENDING') > -1) return 'b-red';
-  if (s.indexOf('LOADING') > -1 || s.indexOf('MUAT') > -1 || s.indexOf('STANDBY') > -1) return 'b-amber';
-  if (s.indexOf('INAP') > -1 || s.indexOf('BACKUP') > -1) return 'b-blue';
+  if (s === 'STANDBY') return 'b-amber';
+  if (s === 'INAP') return 'b-blue';
+  if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'b-red';
   return 'b-gray';
 }
 function visibleLaporan() {
@@ -593,42 +558,85 @@ function grupLaporan(arr) { // kelompokkan per kontrak (sama seperti antrian & m
   return Object.keys(map).sort((a, b) => (a === '' ? 1 : b === '' ? -1 : a.localeCompare(b, 'id', { numeric: true })))
     .map(k => ({ kontrak: k, items: map[k] }));
 }
-function renderRekap() {
-  const rows = visibleLaporan();
-  $('rekapCount').textContent = rows.length + ' data';
-  const tb = $('tbodyRekap');
-  if (!rows.length) {
-    tb.innerHTML = '<tr class="empty"><td colspan="7">Belum ada laporan ' + (showAll ? 'sama sekali.' : 'pada tanggal ini.') + '</td></tr>';
-  } else {
-    tb.innerHTML = grupLaporan(rows).map(g => {
-      const c = warnaKontrak(g.kontrak);
-      return bandKontrak(g.kontrak, g.items.length, 7, c) +
-        g.items.map((r, i) =>
-          '<tr><td>' + (i + 1) + '</td>' +
-          '<td class="nowrap">' + esc(fmtDate(r.tanggal)) + '</td>' +
-          '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
-          '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(r.kontrak || '-') + '</td>' +
-          '<td>' + esc(r.tujuan) + '</td>' +
-          '<td><span class="badge ' + badgeClass(r.status) + '">' + esc(r.status) + '</span></td>' +
-          '<td><div class="aksi">' +
-          '<button class="btn mini btn-green" title="Kirim WhatsApp" onclick="waRow(\'' + r.id + '\')">WA</button>' +
-          '<button class="btn mini btn-blue" title="Edit" onclick="editLaporan(\'' + r.id + '\')">Edit</button>' +
-          '<button class="btn mini btn-red" title="Hapus" onclick="hapusLaporan(\'' + r.id + '\')">Hapus</button>' +
-          '</div></td></tr>'
-        ).join('');
-    }).join('');
-  }
-  updateStats(rows);
+const STATUS_URUT_REKAP = ['INAP', 'KIRIM', 'MUAT/KIRIM', 'STANDBY', 'STORING PERBAIKAN'];
+const REKAP_WARNA = {
+  'INAP': ['#dbeafe', '#1e3a8a'], 'KIRIM': ['#dcfce7', '#166534'], 'MUAT/KIRIM': ['#cffafe', '#155e75'],
+  'STANDBY': ['#fef3c7', '#92400e'], 'STORING PERBAIKAN': ['#ffe4e6', '#9f1239']
+};
+const CHIP_WARNA = { 'INAP': 'c-blue', 'KIRIM': 'c-green', 'MUAT/KIRIM': 'c-navy', 'STANDBY': 'c-amber', 'STORING PERBAIKAN': 'c-red' };
+const kunciHari = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const jamMenitSekarang = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+function bandStatus(st, jumlah, colspan) { // baris pembatas antar kelompok status di papan rekap
+  const c = REKAP_WARNA[st] || ['#e5e7eb', '#374151'];
+  return '<tr class="ant-grp"><td colspan="' + colspan + '" style="background:' + c[0] + ';color:' + c[1] + ';border-top-color:' + c[1] + '"># ' + esc(st) + ' <span style="font-weight:600;opacity:.75">- ' + jumlah + ' unit</span></td></tr>';
 }
-function updateStats(rows) {
-  const c = { KIRIM: 0, 'STANDBY': 0, 'INAP': 0, 'STORING PERBAIKAN': 0 };
-  rows.forEach(r => { const k = (r.status || '').toUpperCase(); if (c[k] != null) c[k]++; });
-  $('statsRow').innerHTML =
-    '<span class="chip c-navy">Total: ' + rows.length + '</span>' +
-    '<span class="chip c-green">KIRIM: ' + c.KIRIM + '</span>' +
-    '<span class="chip c-amber">STANDBY: ' + c.STANDBY + '</span>' +
-    '<span class="chip c-blue">INAP: ' + c.INAP + '</span>' +
-    '<span class="chip c-red">STORING PERBAIKAN: ' + c['STORING PERBAIKAN'] + '</span>';
+function statusRekap(p) { // status otomatis per unit: ikut antrian, aturan jam 22:00 (KIRIM jadi INAP) dan 24 jam (jadi STANDBY)
+  const hariIni = kunciHari(Date.now());
+  const lewat22 = jamMenitSekarang() >= 22 * 60;
+  const an = state.antrian.find(a => normPol(a.polisi) === normPol(p.polisi));
+  if (an) {
+    const st = an.status || 'ANTRIAN DO';
+    if (st === 'MUAT/KIRIM') { // muat/kirim yang tidak daftar lagi -> INAP mulai jam 22:00 pada hari yang sama
+      const hariMuat = kunciHari(an.muatAt || an.createdAt || 0);
+      if (hariMuat < hariIni || (hariMuat === hariIni && lewat22)) return 'INAP';
+      return 'MUAT/KIRIM';
+    }
+    return 'STANDBY'; // sedang mengantri DO = standby tunggu DO
+  }
+  const l = sortLaporan(state.laporan.filter(x => normPol(x.polisi) === normPol(p.polisi)))[0];
+  const st = String((l && l.status) || '').toUpperCase();
+  if (st.indexOf('STORING') > -1 || st.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN'; // tetap storing sampai didaftarkan lagi ke antrian
+  if (st === 'KIRIM' || st.indexOf('MUAT') > -1) { // kirim di jalan: jadi INAP mulai jam 22:00 pada tanggal yang sama, tujuan tetap
+    const tgl = String((l && l.tanggal) || '');
+    if (tgl < hariIni || (tgl === hariIni && lewat22)) return 'INAP';
+    return st === 'KIRIM' ? 'KIRIM' : 'MUAT/KIRIM';
+  }
+  return 'STANDBY'; // tidak ada perubahan antrian dalam 24 jam / belum ada data = standby
+}
+function urutSepertiDaftarPolisi() { // urutan sama persis dengan tabel Daftar No Polisi (per kontrak, abjad di dalamnya)
+  const out = [];
+  grupPolisi(sortName(state.polisi, 'polisi')).forEach(g => g.items.forEach(p => out.push(p)));
+  return out;
+}
+function renderRekap() {
+  const daftar = urutSepertiDaftarPolisi();
+  $('rekapCount').textContent = daftar.length + ' unit';
+  const tb = $('tbodyRekap');
+  if (!daftar.length) {
+    tb.innerHTML = '<tr class="empty"><td colspan="6">Daftar no polisi masih kosong. Tambahkan di tab MASTER atau tempel chat di tab ANTRIAN DO.</td></tr>';
+    $('statsRow').innerHTML = '<span class="chip c-navy">Total: 0</span>';
+    return;
+  }
+  let html = '';
+  const hit = {};
+  STATUS_URUT_REKAP.forEach(st => {
+    const items = daftar.filter(p => statusRekap(p) === st);
+    if (!items.length) return;
+    hit[st] = items.length;
+    const c = REKAP_WARNA[st] || ['#e5e7eb', '#374151'];
+    html += bandStatus(st, items.length, 6);
+    html += items.map((p, i) => {
+      const kon = kontrakKey(p.kontrak);
+      return '<tr><td style="font-weight:800">' + (i + 1) + '</td>' +
+        '<td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
+        '<td class="kontrak-cell" style="color:' + c[1] + '">' + esc(kon || '-') + '</td>' +
+        '<td>' + esc(p.tujuan || '') + '</td>' +
+        '<td><span class="badge ' + badgeClass(st) + '">' + esc(st) + '</span></td>' +
+        '<td><div class="aksi"><button class="btn mini btn-blue" title="Isi tujuan secara manual" onclick="editTujuanUnit(\'' + p.id + '\')">TUJUAN</button></div></td></tr>';
+    }).join('');
+  });
+  tb.innerHTML = html;
+  let chips = '<span class="chip c-navy">Total: ' + daftar.length + '</span>';
+  STATUS_URUT_REKAP.forEach(st => { if (hit[st]) chips += '<span class="chip ' + CHIP_WARNA[st] + '">' + st + ': ' + hit[st] + '</span>'; });
+  $('statsRow').innerHTML = chips;
+}
+async function editTujuanUnit(id) { // tujuan boleh kosong atau diisi manual oleh pengurus
+  const rec = state.polisi.find(x => x.id === id); if (!rec) return;
+  const baru = prompt('TUJUAN untuk ' + rec.polisi + ' (kosongkan bila tidak ada):', rec.tujuan || '');
+  if (baru === null) return;
+  const v = baru.trim().toUpperCase();
+  try { await updateRec('polisi', id, { tujuan: v }); showToast('Tujuan ' + rec.polisi + ' disimpan'); }
+  catch (err) { alert('Gagal menyimpan: ' + errText(err)); }
 }
 function grupPolisi(arr) { // kelompokkan per kontrak; yang belum diisi ditaruh paling bawah
   const map = {};
@@ -700,6 +708,8 @@ async function submitLaporan(e) {
       await addRec('laporan', d);
       showToast('Laporan tersimpan & langsung sama di semua HP');
     }
+    const pm = state.polisi.find(x => normPol(x.polisi) === normPol(d.polisi));
+    if (pm && pm.tujuan !== d.tujuan) await updateRec('polisi', pm.id, { tujuan: d.tujuan }); // tujuan unit tercatat di papan rekap
   } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
   resetLaporanForm();
 }
@@ -769,18 +779,16 @@ function waRekap() {
 }
 
 /* ================= ANTRIAN DO ================= */
-const ANT_STATUS = ['ANTRIAN DO', 'LOADING', 'SELESAI MUAT', 'BERANGKAT'];
+const ANT_STATUS = ['ANTRIAN DO', 'MUAT/KIRIM'];
 let antPreviewItems = [];
 const fmtWaktu = ts => { if (!ts) return '-'; const d = new Date(ts); return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
 function antBadge(s) {
-  if (s === 'LOADING') return 'b-amber';
-  if (s === 'SELESAI MUAT') return 'b-blue';
-  if (s === 'BERANGKAT') return 'b-green';
+  if (s === 'MUAT/KIRIM') return 'b-green';
   return 'b-gray';
 }
 function detectStatusAntrian(line) {
   const s = ' ' + String(line).toLowerCase() + ' ';
-  return /\bmasuk\b/.test(s) ? 'LOADING' : 'ANTRIAN DO';
+  return /\bmasuk\b/.test(s) ? 'MUAT/KIRIM' : 'ANTRIAN DO';
 }
 const normPol = v => String(v || '').toUpperCase().replace(/\s+/g, '');
 function extractPolisi(text) {
@@ -802,27 +810,32 @@ function extractPolisi(text) {
   return out;
 }
 async function simpanAntrianList(items, sumber) {
-  const rank = s => ANT_STATUS.indexOf(s);
   const best = {};
   items.forEach(f => {
     const k = normPol(f.polisi); if (!k) return;
-    if (!best[k] || rank(f.status) > rank(best[k].status)) best[k] = f;
+    if (!best[k] || ANT_STATUS.indexOf(f.status) > ANT_STATUS.indexOf(best[k].status)) best[k] = f;
   });
-  let tambah = 0, keluar = 0, master = 0;
+  let tambah = 0, pindah = 0, master = 0;
   try {
     for (const k of Object.keys(best)) {
       const f = best[k];
       const ex = state.antrian.find(a => normPol(a.polisi) === k);
       if (ex) {
-        if (rank(f.status) > rank(ex.status || 'ANTRIAN DO')) { await deleteRec('antrian', ex.id); keluar++; } // status naik = keluar dari barisan
-      } else if (f.status === 'ANTRIAN DO') {
-        await addRec('antrian', { polisi: f.polisi, status: 'ANTRIAN DO', sumber: sumber, tanggal: todayStr() });
-        tambah++;
-      } else keluar++; // baris "masuk loading" tidak masuk barisan antrian
+        const stLama = ex.status || 'ANTRIAN DO';
+        if (stLama !== f.status) {
+          if (f.status === 'ANTRIAN DO') { await updateRec('antrian', ex.id, { status: 'ANTRIAN DO', createdAt: Date.now() }); tambah++; } // muncul lagi di chat = daftar lagi, dapat nomor tunggu paling bawah
+          else { await updateRec('antrian', ex.id, { status: 'MUAT/KIRIM', muatAt: Date.now() }); pindah++; } // kata "masuk" = muat, pindah ke nomor paling bawah
+        }
+      } else {
+        const rec = { polisi: f.polisi, status: f.status, sumber: sumber, tanggal: todayStr() };
+        if (f.status === 'MUAT/KIRIM') rec.muatAt = Date.now();
+        await addRec('antrian', rec);
+        if (f.status === 'ANTRIAN DO') tambah++; else pindah++;
+      }
       if (!state.polisi.some(p => normPol(p.polisi) === k)) { await addRec('polisi', { polisi: f.polisi, kontrak: '' }); master++; }
     }
-  } catch (err) { alert('Gagal menyimpan antrian: ' + errText(err)); return { tambah: 0, keluar: 0, master: 0 }; }
-  return { tambah, keluar, master };
+  } catch (err) { alert('Gagal menyimpan antrian: ' + errText(err)); return { tambah: 0, pindah: 0, master: 0 }; }
+  return { tambah, pindah, master };
 }
 function previewAntrian(text, sumber) {
   const found = extractPolisi(text);
@@ -835,15 +848,17 @@ function previewAntrian(text, sumber) {
   antPreviewItems = found;
   const opts = st => ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
   box.style.display = 'block';
-  box.innerHTML = '<div class="pv-head">Pratinjau - centang yang mau dimasukkan, atur status bila perlu, lalu klik SIMPAN:</div>' +
+  box.innerHTML = '<div class="pv-head">Pratinjau - centang yang mau diproses, atur status bila perlu, lalu klik SIMPAN:</div>' +
     found.map((f, i) => {
       const k = normPol(f.polisi);
       const ex = state.antrian.find(a => normPol(a.polisi) === k);
       const inAnt = !!ex;
       const inMaster = state.polisi.some(p => normPol(p.polisi) === k);
-      const keluar = inAnt && ANT_STATUS.indexOf(f.status) > ANT_STATUS.indexOf(ex.status || 'ANTRIAN DO');
-      const tag = !inMaster ? 'POLISI BARU' : (keluar ? 'KELUAR ANTRIAN' : (!inAnt ? 'BARU' : 'SUDAH ADA'));
-      const cls = !inMaster ? 'tag-master' : (!inAnt ? 'tag-baru' : 'tag-exist');
+      const stLama = inAnt ? (ex.status || 'ANTRIAN DO') : '';
+      const balik = inAnt && stLama === 'MUAT/KIRIM' && f.status === 'ANTRIAN DO';
+      const muat = inAnt && stLama === 'ANTRIAN DO' && f.status === 'MUAT/KIRIM';
+      const tag = !inMaster ? 'POLISI BARU' : (balik ? 'ANTRIAN LAGI' : (muat ? 'MUAT/KIRIM' : (!inAnt ? 'BARU' : 'SUDAH ADA')));
+      const cls = !inMaster ? 'tag-master' : ((balik || !inAnt) ? 'tag-baru' : 'tag-exist');
       return '<div class="pv-row"><label><input type="checkbox" class="pv-check" checked> <span class="pv-pol">' + esc(f.polisi) + '</span></label>' +
         '<select class="sel-mini" onchange="antPreviewItems[' + i + '].status = this.value">' + opts(f.status) + '</select>' +
         '<span class="pv-tag ' + cls + '">' + tag + '</span></div>';
@@ -858,14 +873,14 @@ async function simpanPreview() {
   const r = await simpanAntrianList(items, 'TEMPEL');
   batalPreview();
   $('antText').value = '';
-  showToast('' + r.tambah + ' masuk antrian' + (r.keluar ? ', ' + r.keluar + ' keluar antrian (loading)' : '') + (r.master ? ', ' + r.master + ' masuk daftar no polisi' : ''));
+  showToast('' + r.tambah + ' masuk antrian' + (r.pindah ? ', ' + r.pindah + ' pindah ke bawah (MUAT/KIRIM)' : '') + (r.master ? ', ' + r.master + ' masuk daftar no polisi' : ''));
 }
 function batalPreview() { antPreviewItems = []; const b = $('antPreview'); if (b) { b.style.display = 'none'; b.innerHTML = ''; } }
 async function ingestAntrian(text, sumber) { // jalur otomatis via URL ?antrian= (tanpa pratinjau)
   const found = extractPolisi(text);
   if (!found.length) { showToast('Pesan otomatis: tidak ada no polisi dikenali'); return; }
   const r = await simpanAntrianList(found, sumber);
-  showToast('+' + r.tambah + ' antrian baru' + (r.keluar ? ', ' + r.keluar + ' keluar antrian (loading)' : '') + (r.master ? ', +' + r.master + ' daftar no polisi' : ''));
+  showToast('+' + r.tambah + ' antrian baru' + (r.pindah ? ', ' + r.pindah + ' muat (pindah bawah)' : '') + (r.master ? ', +' + r.master + ' daftar no polisi' : ''));
 }
 async function submitAntrianManual(e) {
   e.preventDefault();
@@ -897,8 +912,9 @@ function warnaKontrak(k) { // warna tetap untuk tiap kontrak (sama di tabel antr
 function kontrakKey(v) { // "KONTRAK MIL/WING BOX" dan "MIL/WING BOX" jadi satu kelompok yang sama
   return String(v || '').trim().toUpperCase().replace(/^KONTRAK\s+/, '');
 }
-function bandKontrak(kontrak, jumlah, colspan, c) { // baris pembatas antar kelompok kontrak
-  return '<tr class="ant-grp"><td colspan="' + colspan + '" style="background:' + c.bg + ';color:' + c.fg + ';border-top-color:' + c.fg + '"># KONTRAK ' + esc(kontrak || '(BELUM DIISI)') + ' <span style="font-weight:600;opacity:.75">- ' + jumlah + ' unit</span></td></tr>';
+function bandKontrak(kontrak, jumlah, colspan, c, aksiWa) { // baris pembatas antar kelompok kontrak (+ tombol WA di antrian)
+  return '<tr class="ant-grp"><td colspan="' + colspan + '" style="background:' + c.bg + ';color:' + c.fg + ';border-top-color:' + c.fg + '"># KONTRAK ' + esc(kontrak || '(BELUM DIISI)') + ' <span style="font-weight:600;opacity:.75">- ' + jumlah + ' unit</span>' +
+    (aksiWa ? ' <button class="btn mini btn-green" style="margin-left:6px" data-k="' + esc(kontrak || '') + '" onclick="waAntrianKontrak(this.getAttribute(\'data-k\'))">WA</button>' : '') + '</td></tr>';
 }
 function grupAntrian(arr) {
   const map = {};
@@ -910,41 +926,50 @@ function grupAntrian(arr) {
   return Object.keys(map).sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b, 'id', { numeric: true })))
     .map(k => ({ kontrak: k, items: map[k] }));
 }
+function urutanAntrian(arr) { // dalam tiap kontrak: barisan tunggu dulu (paling lama = no 1), yang MUAT/KIRIM nempel paling bawah
+  const bobot = r => (r.status || 'ANTRIAN DO') === 'ANTRIAN DO' ? 0 : 1;
+  return arr.slice().sort((a, b) => bobot(a) - bobot(b) || (a.createdAt || 0) - (b.createdAt || 0) || String(a.id).localeCompare(String(b.id)));
+}
 function renderAntrian() {
-  // tiap KONTRAK punya barisan sendiri: nomor mulai lagi dari 1, paling lama menunggu = no 1, antrian baru nempel di paling bawah
-  const arr = state.antrian.slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0) || String(a.id).localeCompare(String(b.id)));
-  arr.forEach(r => { if ((r.status || 'ANTRIAN DO') !== 'ANTRIAN DO') deleteRec('antrian', r.id).catch(() => {}); }); // status naik = otomatis keluar dari antrian
-  const q = arr.filter(r => (r.status || 'ANTRIAN DO') === 'ANTRIAN DO');
-  $('countAntrian').textContent = q.length + ' unit';
+  // entri antrian TIDAK terhapus: ANTRIAN DO = barisan tunggu, klik MUAT/KIRIM = pindah ke nomor paling bawah, paste chat lagi = balik ANTRIAN DO
+  const arr = urutanAntrian(state.antrian);
+  $('countAntrian').textContent = arr.length + ' unit';
   const tb = $('tbodyAntrian');
-  if (!q.length) {
-    tb.innerHTML = '<tr class="empty"><td colspan="7">Antrian kosong. Tempel chat WhatsApp di atas -> AMBIL NO POLISI -> centang -> SIMPAN.</td></tr>';
+  if (!arr.length) {
+    tb.innerHTML = '<tr class="empty"><td colspan="6">Antrian kosong. Tempel chat WhatsApp di atas -> AMBIL NO POLISI -> centang -> SIMPAN.</td></tr>';
     return;
   }
-  tb.innerHTML = grupAntrian(q).map(g => {
+  tb.innerHTML = grupAntrian(arr).map(g => {
     const c = warnaKontrak(g.kontrak);
-    return bandKontrak(g.kontrak, g.items.length, 7, c) +
+    return bandKontrak(g.kontrak, g.items.length, 6, c, true) +
       g.items.map((r, i) => {
-        const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === 'ANTRIAN DO' ? ' selected' : '') + '>' + s + '</option>').join('');
+        const st = r.status || 'ANTRIAN DO';
+        const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
         return '<tr><td style="font-weight:800">' + (i + 1) + '</td>' +
         '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
         '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(r.kontrak || '-') + '</td>' +
         '<td><select class="sel-mini" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
         '<td class="nowrap">' + fmtWaktu(r.createdAt) + '</td>' +
-        '<td>' + esc(r.sumber || '-') + '</td>' +
         '<td><div class="aksi">' +
         '<button class="btn mini btn-blue" title="Buat laporan dari antrian" onclick="buatLaporanDariAntrian(\'' + r.id + '\')">Laporan</button>' +
-        '<button class="btn mini btn-red" title="Hapus" onclick="hapusAntrian(\'' + r.id + '\')">Hapus</button>' +
+        '<button class="btn mini btn-red" title="Hapus dari antrian" onclick="hapusAntrian(\'' + r.id + '\')">Hapus</button>' +
         '</div></td></tr>';
       }).join('') +
-      '<tr><td style="font-weight:800;color:#94a3b8">' + (g.items.length + 1) + '</td><td colspan="6" style="color:#94a3b8">(menunggu antrian berikut)</td></tr>';
+      '<tr><td style="font-weight:800;color:#94a3b8">' + (g.items.length + 1) + '</td><td colspan="5" style="color:#94a3b8">(menunggu antrian berikut)</td></tr>';
     }).join('');
 }
 async function setStatusAntrian(id, status) {
   const r = state.antrian.find(x => x.id === id); if (!r) return;
-  if (status === 'ANTRIAN DO') return;
-  try { await deleteRec('antrian', id); showToast(r.polisi + ' keluar dari antrian (status ' + status + ') - nomor di bawahnya naik'); }
-  catch (err) { alert('Gagal menghapus: ' + errText(err)); }
+  if ((r.status || 'ANTRIAN DO') === status) return;
+  try {
+    if (status === 'ANTRIAN DO') { // daftar lagi: masuk barisan tunggu, dapat nomor paling bawah
+      await updateRec('antrian', id, { status: 'ANTRIAN DO', createdAt: Date.now() });
+      showToast(r.polisi + ' masuk barisan lagi - dapat nomor tunggu paling bawah');
+    } else { // MUAT/KIRIM: pindah ke nomor paling bawah, tidak terhapus
+      await updateRec('antrian', id, { status: 'MUAT/KIRIM', muatAt: Date.now() });
+      showToast(r.polisi + ' MUAT/KIRIM - pindah ke nomor paling bawah');
+    }
+  } catch (err) { alert('Gagal menyimpan: ' + errText(err)); }
 }
 async function hapusAntrian(id) {
   const r = state.antrian.find(x => x.id === id); if (!r) return;
@@ -969,16 +994,29 @@ function buatLaporanDariAntrian(id) {
   $('panel-input').scrollIntoView({ behavior: 'smooth' });
   showToast('' + r.polisi + ' siap dilaporkan - lengkapi tujuan lalu simpan');
 }
-function waAntrian() {
-  const arr = state.antrian.filter(r => (r.status || 'ANTRIAN DO') === 'ANTRIAN DO')
-    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0) || String(a.id).localeCompare(String(b.id)));
-  if (!arr.length) { alert('Antrian masih kosong.'); return; }
-  let t = 'ANTRIAN DO - SINAR MAJU JAYA\n';
-  grupAntrian(arr).forEach(g => {
-    t += '\n# KONTRAK ' + (g.kontrak || '(BELUM DIISI)') + '\n';
-    g.items.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ANTRIAN DO\n'; });
+function waAntrianKontrak(kontrak) { // kirim antrian satu kontrak lewat WhatsApp
+  const key = kontrakKey(kontrak);
+  const anggota = state.antrian.filter(r => {
+    const m = state.polisi.find(p => normPol(p.polisi) === normPol(r.polisi));
+    return (m ? kontrakKey(m.kontrak) : '') === key;
   });
+  const arr = urutanAntrian(anggota);
+  if (!arr.length) { alert('Antrian kontrak itu masih kosong.'); return; }
+  let t = 'ANTRIAN DO - KONTRAK ' + (key || '(BELUM DIISI)') + ' - SINAR MAJU JAYA\n';
+  arr.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
   t += '\nTotal: ' + arr.length + ' unit';
+  waOpen(t);
+}
+function waAntrian() {
+  if (!state.antrian.length) { alert('Antrian masih kosong.'); return; }
+  let t = 'ANTRIAN DO - SINAR MAJU JAYA\n';
+  let total = 0;
+  grupAntrian(urutanAntrian(state.antrian)).forEach(g => {
+    t += '\n# KONTRAK ' + (g.kontrak || '(BELUM DIISI)') + '\n';
+    g.items.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
+    total += g.items.length;
+  });
+  t += '\nTotal: ' + total + ' unit';
   waOpen(t);
 }
 function handleAntrianUrl() {
@@ -1030,20 +1068,18 @@ function exportBulanan() {
   if (!m) { alert('Pilih bulan terlebih dahulu.'); return; }
   const rows = sortLaporan(state.laporan.filter(l => (l.tanggal || '').startsWith(m)));
   if (!rows.length) { alert('Tidak ada data pada bulan ' + m + '.'); return; }
-  const daftarStatus = sortName(state.status, 'nama').map(s => String(s.nama || '')).filter(Boolean);
   const per = {};
   rows.forEach(r => {
     const k = r.polisi || '-';
-    per[k] = per[k] || { polisi: k, hitung: {}, total: 0 };
+    per[k] = per[k] || { polisi: k, KIRIM: 0, STANDBY: 0, INAP: 0, 'STORING PERBAIKAN': 0, total: 0 };
     const o = per[k];
-    const s = String(r.status || '').trim().toUpperCase();
-    const cocok = daftarStatus.find(n => n.trim().toUpperCase() === s);
-    if (cocok) o.hitung[cocok] = (o.hitung[cocok] || 0) + 1;
+    const s = (r.status || '').toUpperCase();
+    if (o[s] != null) o[s]++;
     o.total++;
   });
-  const aoa2 = [['NO POLISI'].concat(daftarStatus).concat(['TOTAL'])];
+  const aoa2 = [['NO POLISI', 'KIRIM', 'STANDBY', 'INAP', 'STORING PERBAIKAN', 'TOTAL']];
   Object.values(per).sort((a, b) => a.polisi.localeCompare(b.polisi))
-    .forEach(o => aoa2.push([o.polisi].concat(daftarStatus.map(n => o.hitung[n] || 0)).concat([o.total])));
+    .forEach(o => aoa2.push([o.polisi, o.KIRIM, o.STANDBY, o.INAP, o['STORING PERBAIKAN'], o.total]));
   writeExcel('Rekap_Bulanan_' + m, [
     { name: 'Laporan', aoa: rowsToAoa(rows) },
     { name: 'Rekap Per Unit', aoa: aoa2 }
@@ -1058,12 +1094,17 @@ async function submitPolisi(e) {
   if (!pol || !kon) { alert('Isi No Polisi dan Kontrak!'); return; }
   try {
     if (editMaster && editMaster.col === 'polisi') {
+      const lama = (state.polisi.find(x => x.id === editMaster.id) || {}).polisi || pol;
       await updateRec('polisi', editMaster.id, { polisi: pol, kontrak: kon });
+      const exAn = state.antrian.find(a => normPol(a.polisi) === normPol(lama));
+      if (exAn) await updateRec('antrian', exAn.id, { polisi: pol }); // nama berubah, antrian ikut
+      else await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', tanggal: todayStr() }); // pastikan unit ada di antrian kontraknya
       showToast('No polisi diperbarui');
     } else {
       if (state.polisi.some(x => (x.polisi || '').toUpperCase() === pol)) { alert('No polisi sudah terdaftar!'); return; }
       await addRec('polisi', { polisi: pol, kontrak: kon });
-      showToast('No polisi ditambahkan');
+      if (!state.antrian.some(a => normPol(a.polisi) === normPol(pol))) await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', tanggal: todayStr() }); // otomatis masuk antrian kontraknya
+      showToast('No polisi ditambahkan + langsung masuk antrian DO');
     }
   } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
   $('mpPolisi').value = ''; $('mpKontrak').value = '';
@@ -1149,6 +1190,7 @@ async function submitQuick(e) {
       if (!kon) { alert('Pilih kontrak dulu!'); return; }
       if (!state.polisi.some(x => (x.polisi || '').toUpperCase() === nm)) {
         await addRec('polisi', { polisi: nm, kontrak: kon });
+        if (!state.antrian.some(a => normPol(a.polisi) === normPol(nm))) await addRec('antrian', { polisi: nm, status: 'ANTRIAN DO', tanggal: todayStr() }); // otomatis masuk antrian kontraknya
       }
       pendingSelect = { col: 'polisi', v: nm };
     } else {
