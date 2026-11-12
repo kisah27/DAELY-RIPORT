@@ -215,7 +215,7 @@ service cloud.firestore {
       <div class="card">
         <h2>REKAP LAPORAN <span class="cnt" id="rekapCount">0 data</span></h2>
         <details class="cara"><summary>Cara pakai REKAP: papan status semua unit per kontrak, urutan &amp; status otomatis. Tujuan lewat dropdown, ada Edit/Hapus per unit &amp; tombol UNDO. <span class="hint">(ketuk untuk buka/tutup penjelasan lengkap)</span></summary>
-        <p class="desc"><b>Papan status semua unit, dikelompokkan per KONTRAK</b> (baris pembatas warna sama seperti Antrian DO dan Daftar No Polisi). Di dalam tiap kontrak urutan no polisi mengikuti status: <b>INAP, KIRIM, MUAT/KIRIM, STANDBY, STORING PERBAIKAN</b> - begitu status berubah, no polisi otomatis pindah ke posisi status barunya. Statusnya otomatis: mengantri DO = STANDBY, MUAT/KIRIM dari antrian. <b>Unit KIRIM yang tidak daftar lagi otomatis jadi INAP mulai jam 22:00 malam pada hari yang sama</b> (tujuan tetap seperti saat KIRIM). Tidak ada perubahan dalam antrian DO selama 24 jam = STANDBY. STORING PERBAIKAN tidak berubah sampai unit didaftarkan lagi ke Antrian DO. Tujuan diubah langsung lewat dropdown di tiap baris (pilihannya dari Daftar Tujuan). Ada kolom <b>KETERANGAN</b> bebas per unit (kotaknya melebar sendiri kalau tulisannya panjang, isinya sama dengan di Antrian DO), tombol <b>Edit</b> / <b>Hapus</b> per unit, dan tombol <b>UNDO</b> di atas tabel untuk mengembalikan hapus/edit yang salah. Tombol Excel di bawah tetap mengikuti filter tanggal laporan.</p></details>
+        <p class="desc"><b>Papan status semua unit, dikelompokkan per KONTRAK</b> (baris pembatas warna sama seperti Antrian DO dan Daftar No Polisi). Di dalam tiap kontrak urutan no polisi mengikuti status: <b>INAP, KIRIM, MUAT/KIRIM, STANDBY, STORING PERBAIKAN</b> - begitu status berubah, no polisi otomatis pindah ke posisi status barunya. Statusnya otomatis: mengantri DO = STANDBY, MUAT/KIRIM dari antrian. <b>Unit KIRIM yang tidak daftar lagi otomatis jadi INAP mulai jam 22:00 malam pada hari yang sama</b> (tujuan tetap seperti saat KIRIM). Tidak ada perubahan dalam antrian DO selama 24 jam = STANDBY. STORING PERBAIKAN tidak berubah sampai unit didaftarkan lagi ke Antrian DO. Tujuan diubah langsung lewat dropdown di tiap baris (pilihannya dari Daftar Tujuan), ada tombol <b>Edit</b> / <b>Hapus</b> per unit, dan tombol <b>UNDO</b> di atas tabel untuk mengembalikan hapus/edit yang salah. Tombol Excel di bawah tetap mengikuti filter tanggal laporan. Di bagian paling bawah ada <b>TABEL KETERANGAN</b>: pilih no polisi lewat dropdown, kontrak terisi otomatis, tulis keterangan manual (kotaknya melebar sendiri kalau tulisannya panjang, isinya sama dengan di Antrian DO).</p></details>
         <div class="chips" id="statsRow"></div>
         <div class="filterbar">
           <div><label for="rTanggal">TANGGAL</label><input type="date" id="rTanggal"></div>
@@ -226,7 +226,7 @@ service cloud.firestore {
         <div class="undobar"><button type="button" class="btn btn-ghost mini btnUndo" onclick="undoTerakhir()">UNDO</button></div>
         <div class="tblwrap">
           <table>
-            <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>KETERANGAN</th><th>TUJUAN</th><th>STATUS</th><th>AKSI</th></tr></thead>
+            <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>TUJUAN</th><th>STATUS</th><th>AKSI</th></tr></thead>
             <tbody id="tbodyRekap"></tbody>
           </table>
         </div>
@@ -235,6 +235,23 @@ service cloud.firestore {
           <div><label for="rBulan">BULAN (REKAP BULANAN)</label><input type="month" id="rBulan"></div>
           <button class="btn btn-navy" id="btnXlsBulanan">Unduh Excel Bulanan (.xlsx)</button>
         </div>
+        <div style="margin-top:22px">
+          <h2 style="font-size:17px;margin-bottom:2px">TABEL KETERANGAN <span class="cnt" id="countKetRekap">0 unit</span></h2>
+          <p class="desc" style="margin-bottom:10px">Pilih NO POLISI lewat dropdown -> KONTRAK terisi otomatis -> tulis KETERANGAN secara manual -> klik TAMBAH. Kotak keterangan melebar sendiri kalau tulisannya panjang. Isinya sama dengan Tabel Keterangan di tab Antrian DO.</p>
+          <form class="row" style="margin-bottom:12px" onsubmit="event.preventDefault();submitKeterangan('rekap')">
+            <select id="ketPolisiRekap" style="flex:1;min-width:150px" onchange="ketKontrakAuto('ketPolisiRekap')" required></select>
+            <input type="text" id="ketKontrakRekap" placeholder="KONTRAK (otomatis)" disabled style="flex:0 0 140px">
+            <textarea id="ketTextRekap" rows="1" placeholder="Tulis keterangan..." style="min-height:40px;flex:2;min-width:170px" oninput="ketAuto(this)" required></textarea>
+            <button type="submit" class="btn btn-navy">TAMBAH</button>
+          </form>
+          <div class="undobar"><button type="button" class="btn btn-ghost mini btnUndo" onclick="undoTerakhir()">UNDO</button></div>
+          <div class="tblwrap">
+            <table>
+              <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>KETERANGAN</th><th>AKSI</th></tr></thead>
+              <tbody id="tbodyKetRekap"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -242,8 +259,8 @@ service cloud.firestore {
     <section class="panel" id="panel-antrian">
       <div class="card">
         <h2>ANTRIAN DO <span class="cnt" id="countAntrian">0 unit</span></h2>
-        <details class="cara"><summary>Cara pakai ANTRIAN DO: tempel chat WA -> AMBIL NO POLISI -> SIMPAN. Barisan bernomor per kontrak, status dua arah dengan rekap, ada kolom KETERANGAN. <span class="hint">(ketuk untuk buka/tutup penjelasan lengkap)</span></summary>
-        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. <b>Antrian = barisan bernomor untuk SETIAP kontrak: nomor mulai lagi dari 1 di tiap kontrak, no 1 paling lama menunggu, antrian baru selalu dapat nomor paling bawah (2, 3, dan seterusnya).</b> Baris antrian TIDAK terhapus: begitu diubah jadi MUAT/KIRIM, barisnya pindah ke nomor paling bawah dengan status MUAT/KIRIM. Begitu no polisinya muncul lagi di hasil tempel WhatsApp, statusnya kembali ANTRIAN DO dan dapat nomor tunggu paling bawah. Baris chat yang ada kata <b>masuk</b> langsung jadi MUAT/KIRIM. Di setiap kepala kontrak ada tombol <b>WA</b> untuk mengirim daftar antrian kontrak itu saja. <b>Antrian DO selalu lengkap: semua no polisi di Daftar No Polisi otomatis ada di sini</b>, dan sebaliknya no polisi baru di antrian otomatis tercatat di Daftar No Polisi. Bedanya: susunan di Daftar No Polisi permanen, susunan di antrian DO berubah-ubah mengikuti statusnya. Tambah/hapus unit cukup lewat Daftar No Polisi - antrian ikut otomatis. <b>Status yang bisa dipilih: ANTRIAN DO (barisan tunggu bernomor 1, 2, 3 - paling lama menunggu = no 1), lalu di bawahnya tanpa nomor: INAP, STANDBY, STORING PERBAIKAN, dan MUAT/KIRIM paling bawah.</b> No polisi yang muncul lagi di hasil paste padahal sudah ada di antrian TIDAK dibuat dobel - lokasinya saja yang disesuaikan: daftar lagi berarti nomor tunggu paling bawah dan nomor di atasnya otomatis menyesuaikan. Baris chat yang ada kata <b>masuk/muat/loading</b> langsung jadi MUAT/KIRIM; kata <b>storing/perbaikan</b> jadi STORING PERBAIKAN; <b>inap</b> jadi INAP; <b>standby</b> jadi STANDBY. Perubahan status di sini langsung mengubah papan REKAP, dan sebaliknya: begitu laporan disimpan dan status di papan REKAP berubah, status unit di antrian DO langsung ikut otomatis (dua arah). Kolom <b>KETERANGAN</b> bisa diisi bebas per unit (kotaknya melebar sendiri kalau tulisannya panjang, isinya sama dengan di papan rekap). Tombol <b>UNDO</b> di atas tabel mengembalikan hapus/edit yang salah.</p></details>
+        <details class="cara"><summary>Cara pakai ANTRIAN DO: tempel chat WA -> AMBIL NO POLISI -> SIMPAN. Barisan bernomor per kontrak, status dua arah dengan rekap, ada Tabel Keterangan di paling bawah. <span class="hint">(ketuk untuk buka/tutup penjelasan lengkap)</span></summary>
+        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. <b>Antrian = barisan bernomor untuk SETIAP kontrak: nomor mulai lagi dari 1 di tiap kontrak, no 1 paling lama menunggu, antrian baru selalu dapat nomor paling bawah (2, 3, dan seterusnya).</b> Baris antrian TIDAK terhapus: begitu diubah jadi MUAT/KIRIM, barisnya pindah ke nomor paling bawah dengan status MUAT/KIRIM. Begitu no polisinya muncul lagi di hasil tempel WhatsApp, statusnya kembali ANTRIAN DO dan dapat nomor tunggu paling bawah. Baris chat yang ada kata <b>masuk</b> langsung jadi MUAT/KIRIM. Di setiap kepala kontrak ada tombol <b>WA</b> untuk mengirim daftar antrian kontrak itu saja. <b>Antrian DO selalu lengkap: semua no polisi di Daftar No Polisi otomatis ada di sini</b>, dan sebaliknya no polisi baru di antrian otomatis tercatat di Daftar No Polisi. Bedanya: susunan di Daftar No Polisi permanen, susunan di antrian DO berubah-ubah mengikuti statusnya. Tambah/hapus unit cukup lewat Daftar No Polisi - antrian ikut otomatis. <b>Status yang bisa dipilih: ANTRIAN DO (barisan tunggu bernomor 1, 2, 3 - paling lama menunggu = no 1), lalu di bawahnya tanpa nomor: INAP, STANDBY, STORING PERBAIKAN, dan MUAT/KIRIM paling bawah.</b> No polisi yang muncul lagi di hasil paste padahal sudah ada di antrian TIDAK dibuat dobel - lokasinya saja yang disesuaikan: daftar lagi berarti nomor tunggu paling bawah dan nomor di atasnya otomatis menyesuaikan. Baris chat yang ada kata <b>masuk/muat/loading</b> langsung jadi MUAT/KIRIM; kata <b>storing/perbaikan</b> jadi STORING PERBAIKAN; <b>inap</b> jadi INAP; <b>standby</b> jadi STANDBY. Perubahan status di sini langsung mengubah papan REKAP, dan sebaliknya: begitu laporan disimpan dan status di papan REKAP berubah, status unit di antrian DO langsung ikut otomatis (dua arah). Di bagian paling bawah ada <b>TABEL KETERANGAN</b>: pilih no polisi lewat dropdown, kontrak terisi otomatis, tulis keterangan manual (kotaknya melebar sendiri kalau tulisannya panjang, isinya sama dengan di papan rekap). Tombol <b>UNDO</b> di atas tabel mengembalikan hapus/edit yang salah.</p></details>
         <div class="row" style="margin-bottom:12px">
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/BEFGPoZY0bGCB8KwEYy7HI?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 1</a>
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/CLRIPktR8dU32jwRl7EqBj?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 2</a>
@@ -264,13 +281,30 @@ service cloud.firestore {
         </details>
         <div class="undobar"><button type="button" class="btn btn-ghost mini btnUndo" onclick="undoTerakhir()">UNDO</button></div>
         <div class="tblwrap">
-          <table style="min-width:700px">
-            <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>KETERANGAN</th><th>STATUS</th><th>WAKTU MASUK</th><th>AKSI</th></tr></thead>
+          <table style="min-width:600px">
+            <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>STATUS</th><th>WAKTU MASUK</th><th>AKSI</th></tr></thead>
             <tbody id="tbodyAntrian"></tbody>
           </table>
         </div>
         <div class="exportbar">
           <button class="btn btn-green" id="btnAntWa">Kirim Antrian lewat WhatsApp</button>
+        </div>
+        <div style="margin-top:22px">
+          <h2 style="font-size:17px;margin-bottom:2px">TABEL KETERANGAN <span class="cnt" id="countKetAntrian">0 unit</span></h2>
+          <p class="desc" style="margin-bottom:10px">Pilih NO POLISI lewat dropdown -> KONTRAK terisi otomatis -> tulis KETERANGAN secara manual -> klik TAMBAH. Kotak keterangan melebar sendiri kalau tulisannya panjang. Isinya sama dengan Tabel Keterangan di tab Rekap Laporan.</p>
+          <form class="row" style="margin-bottom:12px" onsubmit="event.preventDefault();submitKeterangan('antrian')">
+            <select id="ketPolisiAntrian" style="flex:1;min-width:150px" onchange="ketKontrakAuto('ketPolisiAntrian')" required></select>
+            <input type="text" id="ketKontrakAntrian" placeholder="KONTRAK (otomatis)" disabled style="flex:0 0 140px">
+            <textarea id="ketTextAntrian" rows="1" placeholder="Tulis keterangan..." style="min-height:40px;flex:2;min-width:170px" oninput="ketAuto(this)" required></textarea>
+            <button type="submit" class="btn btn-navy">TAMBAH</button>
+          </form>
+          <div class="undobar"><button type="button" class="btn btn-ghost mini btnUndo" onclick="undoTerakhir()">UNDO</button></div>
+          <div class="tblwrap">
+            <table>
+              <thead><tr><th>NO</th><th>NO POLISI</th><th>KONTRAK</th><th>KETERANGAN</th><th>AKSI</th></tr></thead>
+              <tbody id="tbodyKetAntrian"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -562,7 +596,10 @@ function ketAuto(el) { // kotak keterangan melebar mengikuti panjang tulisan
   el.style.height = 'auto';
   el.style.height = Math.max(34, el.scrollHeight) + 'px';
 }
-function ketGrowAll() { document.querySelectorAll('textarea.ket-input').forEach(ketAuto); }
+function ketGrowAll() { // tunggu tata letak siap, lalu ukur lagi sekali lagi supaya tinggi kotak pas
+  requestAnimationFrame(() => document.querySelectorAll('textarea.ket-input').forEach(ketAuto));
+  setTimeout(() => document.querySelectorAll('textarea.ket-input').forEach(ketAuto), 300);
+}
 const ketTimer = {};
 function ketDebounce(id, v) { clearTimeout(ketTimer[id]); ketTimer[id] = setTimeout(() => ketSimpan(id, v), 1000); }
 async function ketSimpan(id, v) { // keterangan disimpan di Daftar No Polisi (satu sumber, sama di rekap & antrian)
@@ -590,6 +627,69 @@ function optTujuanRekap(p) { // dropdown tujuan untuk satu baris rekap
     '<option value=""' + (cur ? '' : ' selected') + '>(kosong)</option>' +
     nama.map(n => '<option value="' + esc(n) + '"' + (n === cur ? ' selected' : '') + '>' + esc(n) + '</option>').join('') +
     '</select>';
+}
+
+/* ================= TABEL KETERANGAN ================= */
+function renderKetSelects() { // dropdown no polisi untuk Tabel Keterangan (rekap & antrian), dikelompokkan per kontrak
+  ['ketPolisiRekap', 'ketPolisiAntrian'].forEach(id => {
+    const sel = $(id); if (!sel) return;
+    const cur = sel.value;
+    let html = '<option value="">Pilih No Polisi</option>';
+    grupPolisi(sortName(state.polisi, 'polisi')).forEach(g => {
+      html += '<optgroup label="' + esc('# KONTRAK ' + (g.kontrak || '(BELUM DIISI)')) + '">';
+      g.items.forEach(p => html += '<option value="' + esc(p.id) + '">' + esc(p.polisi) + '</option>');
+      html += '</optgroup>'; // wajib ditutup: kalau tidak, optgroup jadi bersarang dan pilihan tidak tampil lengkap
+    });
+    sel.innerHTML = html;
+    if (cur && state.polisi.some(p => p.id === cur)) sel.value = cur; // pilihan yang sedang dipilih tidak direset saat data menyegarkan
+    ketKontrakAuto(id);
+  });
+}
+function ketKontrakAuto(selId) { // kontrak terisi otomatis mengikuti no polisi yang dipilih di dropdown
+  const sel = $(selId);
+  const box = $(selId === 'ketPolisiRekap' ? 'ketKontrakRekap' : 'ketKontrakAntrian');
+  if (!sel || !box) return;
+  const p = state.polisi.find(x => x.id === sel.value);
+  box.value = p ? (p.kontrak || '(BELUM DIISI)') : '';
+}
+async function submitKeterangan(which) { // tombol TAMBAH di Tabel Keterangan: simpan keterangan unit yang dipilih
+  const isRekap = which === 'rekap';
+  const sel = $(isRekap ? 'ketPolisiRekap' : 'ketPolisiAntrian');
+  const txt = $(isRekap ? 'ketTextRekap' : 'ketTextAntrian');
+  const p = state.polisi.find(x => x.id === sel.value);
+  if (!p) { alert('Pilih no polisinya dulu!'); return; }
+  const v = txt.value.trim();
+  if (!v) { alert('Tulis keterangannya dulu!'); return; }
+  if (p.ket && !confirm(p.polisi + ' sudah punya keterangan. Ganti dengan yang baru?')) return;
+  snapshotUndo((p.ket ? 'ganti' : 'tambah') + ' keterangan ' + p.polisi, ['polisi']); // bisa dikembalikan lewat UNDO
+  try { await updateRec('polisi', p.id, { ket: v }); showToast('Keterangan ' + p.polisi + ' disimpan'); }
+  catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
+  txt.value = '';
+}
+function renderKetTables() { // daftar keterangan (sama di rekap & antrian): hanya unit yang keterangannya terisi
+  const arr = state.polisi.filter(p => p.ket)
+    .sort((a, b) => kontrakKey(a.kontrak).localeCompare(kontrakKey(b.kontrak), 'id', { numeric: true }) || (a.polisi || '').localeCompare(b.polisi || '', 'id'));
+  ['Rekap', 'Antrian'].forEach(suf => {
+    const cnt = $('countKet' + suf); if (cnt) cnt.textContent = arr.length + ' unit';
+    const tb = $('tbodyKet' + suf); if (!tb) return;
+    if (!arr.length) { tb.innerHTML = '<tr class="empty"><td colspan="5">Belum ada keterangan. Pilih no polisi di form di atas, tulis keterangannya, lalu klik TAMBAH.</td></tr>'; return; }
+    tb.innerHTML = arr.map((p, i) => {
+      const c = warnaKontrak(kontrakKey(p.kontrak));
+      return '<tr><td style="font-weight:800">' + (i + 1) + '</td>' +
+        '<td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
+        '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(p.kontrak || '-') + '</td>' +
+        '<td><textarea class="ket-input" rows="1" placeholder="keterangan..." oninput="ketAuto(this);ketDebounce(\'' + p.id + '\',this.value)" onchange="ketSimpan(\'' + p.id + '\',this.value)">' + esc(p.ket) + '</textarea></td>' +
+        '<td><div class="aksi"><button class="btn mini btn-red" title="Hapus keterangan ini (bisa di-UNDO)" onclick="ketHapus(\'' + p.id + '\')">Hapus</button></div></td></tr>';
+    }).join('');
+  });
+  ketGrowAll();
+}
+async function ketHapus(id) { // hapus keterangan unit (bisa di-UNDO)
+  const p = state.polisi.find(x => x.id === id); if (!p || !p.ket) return;
+  if (!confirm('Hapus keterangan ' + p.polisi + '?')) return;
+  snapshotUndo('hapus keterangan ' + p.polisi, ['polisi']); // bisa dikembalikan lewat UNDO
+  try { await updateRec('polisi', id, { ket: '' }); showToast('Keterangan dihapus (bisa di-UNDO)'); }
+  catch (err) { alert('Gagal menghapus: ' + errText(err)); }
 }
 
 /* ================= DROPDOWN ================= */
@@ -751,7 +851,7 @@ function renderRekap() { // dikelompokkan per KONTRAK; di dalam tiap kontrak uru
   $('rekapCount').textContent = daftar.length + ' unit';
   const tb = $('tbodyRekap');
   if (!daftar.length) {
-    tb.innerHTML = '<tr class="empty"><td colspan="7">Daftar no polisi masih kosong. Tambahkan di tab MASTER atau tempel chat di tab ANTRIAN DO.</td></tr>';
+    tb.innerHTML = '<tr class="empty"><td colspan="6">Daftar no polisi masih kosong. Tambahkan di tab MASTER atau tempel chat di tab ANTRIAN DO.</td></tr>';
     $('statsRow').innerHTML = '<span class="chip c-navy">Total: 0</span>';
     return;
   }
@@ -764,13 +864,12 @@ function renderRekap() { // dikelompokkan per KONTRAK; di dalam tiap kontrak uru
   grupPolisi(daftar).forEach(g => {
     const c = warnaKontrak(g.kontrak);
     const items = g.items.slice().sort((a, b) => bobot(status[a.id]) - bobot(status[b.id]) || (a.polisi || '').localeCompare(b.polisi || '', 'id'));
-    html += bandKontrak(g.kontrak, items.length, 7, c, false);
+    html += bandKontrak(g.kontrak, items.length, 6, c, false);
     html += items.map((p, i) => {
       const st = status[p.id];
       return '<tr><td style="font-weight:800">' + (i + 1) + '</td>' +
         '<td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
         '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(g.kontrak || '-') + '</td>' +
-        '<td><textarea class="ket-input" rows="1" placeholder="keterangan..." oninput="ketAuto(this);ketDebounce(\'' + p.id + '\',this.value)" onchange="ketSimpan(\'' + p.id + '\',this.value)">' + esc(p.ket || '') + '</textarea></td>' +
         '<td>' + optTujuanRekap(p) + '</td>' +
         '<td><span class="badge ' + badgeClass(st) + '">' + esc(st) + '</span></td>' +
         '<td><div class="aksi">' +
@@ -780,7 +879,6 @@ function renderRekap() { // dikelompokkan per KONTRAK; di dalam tiap kontrak uru
     }).join('');
   });
   tb.innerHTML = html;
-  ketGrowAll();
   let chips = '<span class="chip c-navy">Total: ' + daftar.length + '</span>';
   STATUS_URUT_REKAP.forEach(st => { if (hit[st]) chips += '<span class="chip ' + CHIP_WARNA[st] + '">' + st + ': ' + hit[st] + '</span>'; });
   $('statsRow').innerHTML = chips;
@@ -838,8 +936,8 @@ function renderStatusTable() {
       '</div></td></tr>').join('');
 }
 function renderAll() {
-  renderPolisiSelect(); renderTujuanSelect(); renderStatusSelect();
-  renderRekap(); renderPolisiTable(); renderTujuanTable(); renderStatusTable(); renderAntrian();
+  renderPolisiSelect(); renderTujuanSelect(); renderStatusSelect(); renderKetSelects();
+  renderRekap(); renderPolisiTable(); renderTujuanTable(); renderStatusTable(); renderAntrian(); renderKetTables();
   updateUndoButtons();
 }
 
@@ -1107,7 +1205,7 @@ function grupAntrian(arr) {
   arr.forEach(r => {
     const m = state.polisi.find(p => normPol(p.polisi) === normPol(r.polisi));
     const k = m ? kontrakKey(m.kontrak) : '';
-    (map[k] = map[k] || []).push(Object.assign({}, r, { kontrak: k, pid: m ? m.id : null, ket: m ? (m.ket || '') : '' })); // pid & ket dari master: keterangan satu sumber
+    (map[k] = map[k] || []).push(Object.assign({}, r, { kontrak: k }));
   });
   return Object.keys(map).sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b, 'id', { numeric: true })))
     .map(k => ({ kontrak: k, items: map[k] }));
@@ -1146,22 +1244,18 @@ function renderAntrian() {
   $('countAntrian').textContent = arr.length + ' unit';
   const tb = $('tbodyAntrian');
   if (!arr.length) {
-    tb.innerHTML = '<tr class="empty"><td colspan="7">Antrian kosong. Tempel chat WhatsApp di atas -> AMBIL NO POLISI -> centang -> SIMPAN.</td></tr>';
+    tb.innerHTML = '<tr class="empty"><td colspan="6">Antrian kosong. Tempel chat WhatsApp di atas -> AMBIL NO POLISI -> centang -> SIMPAN.</td></tr>';
     return;
   }
   tb.innerHTML = grupAntrian(arr).map(g => {
     const c = warnaKontrak(g.kontrak);
-    let no = 0, html = bandKontrak(g.kontrak, g.items.length, 7, c, true), nonTunggu = '';
+    let no = 0, html = bandKontrak(g.kontrak, g.items.length, 6, c, true), nonTunggu = '';
     g.items.forEach(r => {
       const st = r.status || 'ANTRIAN DO';
       const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
-      const ketTd = r.pid
-        ? '<td><textarea class="ket-input" rows="1" placeholder="keterangan..." oninput="ketAuto(this);ketDebounce(\'' + r.pid + '\',this.value)" onchange="ketSimpan(\'' + r.pid + '\',this.value)">' + esc(r.ket || '') + '</textarea></td>'
-        : '<td>-</td>';
       const baris = '<tr><td style="font-weight:800">' + (st === 'ANTRIAN DO' ? (++no) : '-') + '</td>' +
         '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
         '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(r.kontrak || '-') + '</td>' +
-        ketTd +
         '<td><select class="sel-mini" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
         '<td class="nowrap">' + fmtWaktu(st === 'ANTRIAN DO' ? r.createdAt : (r.muatAt || r.createdAt)) + '</td>' +
         '<td><div class="aksi">' +
@@ -1169,10 +1263,9 @@ function renderAntrian() {
         '</div></td></tr>';
       if (st === 'ANTRIAN DO') html += baris; else nonTunggu += baris; // hanya barisan tunggu yang bernomor; lainnya tanda "-" di bawahnya
     });
-    html += '<tr><td style="font-weight:800;color:#94a3b8">' + (no + 1) + '</td><td colspan="6" style="color:#94a3b8">(menunggu antrian berikut)</td></tr>';
+    html += '<tr><td style="font-weight:800;color:#94a3b8">' + (no + 1) + '</td><td colspan="5" style="color:#94a3b8">(menunggu antrian berikut)</td></tr>';
     return html + nonTunggu;
     }).join('');
-  ketGrowAll();
 }
 async function setStatusAntrian(id, status) {
   const r = state.antrian.find(x => x.id === id); if (!r) return;
