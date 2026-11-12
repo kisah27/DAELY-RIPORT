@@ -205,7 +205,7 @@ service cloud.firestore {
     <section class="panel" id="panel-rekap">
       <div class="card">
         <h2>REKAP LAPORAN <span class="cnt" id="rekapCount">0 data</span></h2>
-        <p class="desc"><b>Papan status semua unit</b> - susunan no polisinya sama persis dengan Daftar No Polisi. Status tiap unit otomatis mengikuti Antrian DO: mengantri DO = STANDBY, klik MUAT/KIRIM di antrian = MUAT/KIRIM. <b>Unit berstatus KIRIM/MUAT-KIRIM yang tidak daftar lagi otomatis jadi INAP mulai jam 22:00 malam pada hari yang sama</b> (tujuan tetap seperti saat KIRIM). Unit yang tidak ada perubahan dalam antrian DO selama 24 jam otomatis STANDBY. STORING PERBAIKAN tidak berubah sampai unit didaftarkan lagi ke Antrian DO. Tujuan boleh kosong atau diisi manual lewat tombol TUJUAN di tiap baris. Tombol Excel di bawah tetap mengikuti filter tanggal laporan.</p>
+        <p class="desc"><b>Papan status semua unit, dikelompokkan per KONTRAK</b> (baris pembatas warna sama seperti Antrian DO dan Daftar No Polisi). Di dalam tiap kontrak urutan no polisi mengikuti status: <b>INAP, KIRIM, MUAT/KIRIM, STANDBY, STORING PERBAIKAN</b> - begitu status berubah, no polisi otomatis pindah ke posisi status barunya. Statusnya otomatis: mengantri DO = STANDBY, MUAT/KIRIM dari antrian. <b>Unit KIRIM yang tidak daftar lagi otomatis jadi INAP mulai jam 22:00 malam pada hari yang sama</b> (tujuan tetap seperti saat KIRIM). Tidak ada perubahan dalam antrian DO selama 24 jam = STANDBY. STORING PERBAIKAN tidak berubah sampai unit didaftarkan lagi ke Antrian DO. Tujuan boleh kosong atau diisi manual lewat tombol TUJUAN di tiap baris. Tombol Excel di bawah tetap mengikuti filter tanggal laporan.</p>
         <div class="chips" id="statsRow"></div>
         <div class="filterbar">
           <div><label for="rTanggal">TANGGAL</label><input type="date" id="rTanggal"></div>
@@ -231,7 +231,7 @@ service cloud.firestore {
     <section class="panel" id="panel-antrian">
       <div class="card">
         <h2>ANTRIAN DO <span class="cnt" id="countAntrian">0 unit</span></h2>
-        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. <b>Antrian = barisan bernomor untuk SETIAP kontrak: nomor mulai lagi dari 1 di tiap kontrak, no 1 paling lama menunggu, antrian baru selalu dapat nomor paling bawah (2, 3, dan seterusnya).</b> Baris antrian TIDAK terhapus: begitu diubah jadi MUAT/KIRIM, barisnya pindah ke nomor paling bawah dengan status MUAT/KIRIM. Begitu no polisinya muncul lagi di hasil tempel WhatsApp, statusnya kembali ANTRIAN DO dan dapat nomor tunggu paling bawah. Baris chat yang ada kata <b>masuk</b> langsung jadi MUAT/KIRIM. Di setiap kepala kontrak ada tombol <b>WA</b> untuk mengirim daftar antrian kontrak itu saja. No polisi baru di Daftar No Polisi otomatis masuk antrian sesuai kontraknya, dan sebaliknya no polisi baru di antrian otomatis tercatat di Daftar No Polisi.</p>
+        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. <b>Antrian = barisan bernomor untuk SETIAP kontrak: nomor mulai lagi dari 1 di tiap kontrak, no 1 paling lama menunggu, antrian baru selalu dapat nomor paling bawah (2, 3, dan seterusnya).</b> Baris antrian TIDAK terhapus: begitu diubah jadi MUAT/KIRIM, barisnya pindah ke nomor paling bawah dengan status MUAT/KIRIM. Begitu no polisinya muncul lagi di hasil tempel WhatsApp, statusnya kembali ANTRIAN DO dan dapat nomor tunggu paling bawah. Baris chat yang ada kata <b>masuk</b> langsung jadi MUAT/KIRIM. Di setiap kepala kontrak ada tombol <b>WA</b> untuk mengirim daftar antrian kontrak itu saja. <b>Antrian DO selalu lengkap: semua no polisi di Daftar No Polisi otomatis ada di sini</b>, dan sebaliknya no polisi baru di antrian otomatis tercatat di Daftar No Polisi. Bedanya: susunan di Daftar No Polisi permanen, susunan di antrian DO berubah-ubah mengikuti statusnya. Tambah/hapus unit cukup lewat Daftar No Polisi - antrian ikut otomatis.</p>
         <div class="row" style="margin-bottom:12px">
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/BEFGPoZY0bGCB8KwEYy7HI?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 1</a>
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/CLRIPktR8dU32jwRl7EqBj?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 2</a>
@@ -258,7 +258,6 @@ service cloud.firestore {
         </div>
         <div class="exportbar">
           <button class="btn btn-green" id="btnAntWa">Kirim Antrian lewat WhatsApp</button>
-          <button class="btn btn-red" id="btnAntKosong">Kosongkan Antrian</button>
         </div>
       </div>
     </section>
@@ -267,7 +266,7 @@ service cloud.firestore {
     <section class="panel" id="panel-polisi">
       <div class="card">
         <h2>DAFTAR NO POLISI <span class="cnt" id="countPolisi">0</span></h2>
-        <p class="desc">Daftar nomor polisi + kontraknya. Otomatis dipakai sebagai pilihan di Input Laporan. No polisi baru yang ditambah di sini <b>langsung masuk Antrian DO sesuai kontraknya</b>, dan sebaliknya no polisi baru dari Antrian DO otomatis masuk ke daftar ini.</p>
+        <p class="desc">Daftar nomor polisi + kontraknya. Otomatis dipakai sebagai pilihan di Input Laporan. No polisi baru yang ditambah di sini <b>langsung masuk Antrian DO sesuai kontraknya</b>, dan sebaliknya no polisi baru dari Antrian DO otomatis masuk ke daftar ini. No polisi yang dihapus di sini ikut keluar dari Antrian DO dan Rekap.</p>
         <form id="formPolisi" class="row" style="margin-bottom:14px">
           <input type="text" id="mpPolisi" placeholder="Contoh: B 9120 UYT" required>
           <select id="mpKontrak" required></select>
@@ -441,10 +440,12 @@ function seedStatusLocal() {
     lsSave('status', state.status);
   }
 }
+const terkirim = {}; // penanda koleksi sudah pernah mengirim snapshot (sinkron antrian tunggu data lengkap)
 function subscribeAll() {
   COLS.forEach(col => {
     const unsub = db.collection(col).onSnapshot(snap => {
       state[col] = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      terkirim[col] = true;
       renderAll();
     }, err => goOffline(errText(err) + ' '));
   });
@@ -452,7 +453,7 @@ function subscribeAll() {
 function goOffline(reason) {
   if (online) COLS.forEach(c => lsSave(c, state[c])); // simpan data yang sudah termuat
   online = false; db = null;
-  COLS.forEach(c => { state[c] = lsAll(c); });
+  COLS.forEach(c => { state[c] = lsAll(c); terkirim[c] = true; });
   seedStatusLocal();
   setSync(false, reason);
   renderAll();
@@ -540,7 +541,7 @@ function onPolisiChange() {
 /* ================= RENDER TABEL ================= */
 function badgeClass(s) {
   s = (s || '').toUpperCase();
-  if (s === 'KIRIM') return 'b-green';
+  if (s === 'KIRIM' || s === 'MUAT/KIRIM') return 'b-green';
   if (s === 'STANDBY') return 'b-amber';
   if (s === 'INAP') return 'b-blue';
   if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'b-red';
@@ -559,46 +560,44 @@ function grupLaporan(arr) { // kelompokkan per kontrak (sama seperti antrian & m
     .map(k => ({ kontrak: k, items: map[k] }));
 }
 const STATUS_URUT_REKAP = ['INAP', 'KIRIM', 'MUAT/KIRIM', 'STANDBY', 'STORING PERBAIKAN'];
-const REKAP_WARNA = {
-  'INAP': ['#dbeafe', '#1e3a8a'], 'KIRIM': ['#dcfce7', '#166534'], 'MUAT/KIRIM': ['#cffafe', '#155e75'],
-  'STANDBY': ['#fef3c7', '#92400e'], 'STORING PERBAIKAN': ['#ffe4e6', '#9f1239']
-};
 const CHIP_WARNA = { 'INAP': 'c-blue', 'KIRIM': 'c-green', 'MUAT/KIRIM': 'c-navy', 'STANDBY': 'c-amber', 'STORING PERBAIKAN': 'c-red' };
 const kunciHari = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
 const jamMenitSekarang = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
-function bandStatus(st, jumlah, colspan) { // baris pembatas antar kelompok status di papan rekap
-  const c = REKAP_WARNA[st] || ['#e5e7eb', '#374151'];
-  return '<tr class="ant-grp"><td colspan="' + colspan + '" style="background:' + c[0] + ';color:' + c[1] + ';border-top-color:' + c[1] + '"># ' + esc(st) + ' <span style="font-weight:600;opacity:.75">- ' + jumlah + ' unit</span></td></tr>';
-}
-function statusRekap(p) { // status otomatis per unit: ikut antrian, aturan jam 22:00 (KIRIM jadi INAP) dan 24 jam (jadi STANDBY)
+function statusRekap(p) { // status otomatis per unit: ditentukan peristiwa TERBARU (perubahan antrian atau laporan), plus aturan jam 22:00 (KIRIM jadi INAP)
   const hariIni = kunciHari(Date.now());
   const lewat22 = jamMenitSekarang() >= 22 * 60;
   const an = state.antrian.find(a => normPol(a.polisi) === normPol(p.polisi));
-  if (an) {
+  const l = sortLaporan(state.laporan.filter(x => normPol(x.polisi) === normPol(p.polisi)))[0];
+  // waktu aktivitas antrian: klik MUAT/KIRIM selalu dihitung; pendaftaran dihitung kalau bukan entri buatan sinkron otomatis
+  const waktuAntrian = an ? ((an.status || 'ANTRIAN DO') === 'MUAT/KIRIM' ? (an.muatAt || an.createdAt || 0) : (an.sumber === 'MASTER' ? 0 : (an.createdAt || 0))) : 0;
+  const waktuLaporan = l ? (l.createdAt || 0) : 0;
+  if (waktuAntrian > 0 && waktuAntrian >= waktuLaporan) {
     const st = an.status || 'ANTRIAN DO';
     if (st === 'MUAT/KIRIM') { // muat/kirim yang tidak daftar lagi -> INAP mulai jam 22:00 pada hari yang sama
       const hariMuat = kunciHari(an.muatAt || an.createdAt || 0);
       if (hariMuat < hariIni || (hariMuat === hariIni && lewat22)) return 'INAP';
       return 'MUAT/KIRIM';
     }
-    return 'STANDBY'; // sedang mengantri DO = standby tunggu DO
+    return 'STANDBY'; // baru didaftarkan ke antrian DO = standby tunggu DO
   }
-  const l = sortLaporan(state.laporan.filter(x => normPol(x.polisi) === normPol(p.polisi)))[0];
-  const st = String((l && l.status) || '').toUpperCase();
-  if (st.indexOf('STORING') > -1 || st.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN'; // tetap storing sampai didaftarkan lagi ke antrian
-  if (st === 'KIRIM' || st.indexOf('MUAT') > -1) { // kirim di jalan: jadi INAP mulai jam 22:00 pada tanggal yang sama, tujuan tetap
-    const tgl = String((l && l.tanggal) || '');
-    if (tgl < hariIni || (tgl === hariIni && lewat22)) return 'INAP';
-    return st === 'KIRIM' ? 'KIRIM' : 'MUAT/KIRIM';
+  if (l) {
+    const st = String(l.status || '').toUpperCase();
+    if (st.indexOf('STORING') > -1 || st.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN'; // tetap storing sampai didaftarkan lagi ke antrian
+    if (st.indexOf('INAP') > -1) return 'INAP';
+    if (st === 'KIRIM' || st.indexOf('MUAT') > -1 || st.indexOf('LOADING') > -1 || st.indexOf('PENDING') > -1) { // di jalan: jadi INAP mulai jam 22:00 pada tanggal yang sama, tujuan tetap
+      const tgl = String(l.tanggal || '');
+      if (tgl < hariIni || (tgl === hariIni && lewat22)) return 'INAP';
+      return st.indexOf('MUAT') > -1 ? 'MUAT/KIRIM' : 'KIRIM';
+    }
   }
-  return 'STANDBY'; // tidak ada perubahan antrian dalam 24 jam / belum ada data = standby
+  return 'STANDBY'; // tanpa aktivitas / tidak ada perubahan antrian DO selama 24 jam = standby
 }
 function urutSepertiDaftarPolisi() { // urutan sama persis dengan tabel Daftar No Polisi (per kontrak, abjad di dalamnya)
   const out = [];
   grupPolisi(sortName(state.polisi, 'polisi')).forEach(g => g.items.forEach(p => out.push(p)));
   return out;
 }
-function renderRekap() {
+function renderRekap() { // dikelompokkan per KONTRAK; di dalam tiap kontrak urutan no polisi mengikuti status: INAP, KIRIM, MUAT/KIRIM, STANDBY, STORING PERBAIKAN
   const daftar = urutSepertiDaftarPolisi();
   $('rekapCount').textContent = daftar.length + ' unit';
   const tb = $('tbodyRekap');
@@ -607,19 +606,21 @@ function renderRekap() {
     $('statsRow').innerHTML = '<span class="chip c-navy">Total: 0</span>';
     return;
   }
-  let html = '';
+  const status = {};
+  daftar.forEach(p => { status[p.id] = statusRekap(p); });
+  const bobot = st => STATUS_URUT_REKAP.indexOf(st);
   const hit = {};
-  STATUS_URUT_REKAP.forEach(st => {
-    const items = daftar.filter(p => statusRekap(p) === st);
-    if (!items.length) return;
-    hit[st] = items.length;
-    const c = REKAP_WARNA[st] || ['#e5e7eb', '#374151'];
-    html += bandStatus(st, items.length, 6);
+  daftar.forEach(p => { const st = status[p.id]; hit[st] = (hit[st] || 0) + 1; });
+  let html = '';
+  grupPolisi(daftar).forEach(g => {
+    const c = warnaKontrak(g.kontrak);
+    const items = g.items.slice().sort((a, b) => bobot(status[a.id]) - bobot(status[b.id]) || (a.polisi || '').localeCompare(b.polisi || '', 'id'));
+    html += bandKontrak(g.kontrak, items.length, 6, c, false);
     html += items.map((p, i) => {
-      const kon = kontrakKey(p.kontrak);
+      const st = status[p.id];
       return '<tr><td style="font-weight:800">' + (i + 1) + '</td>' +
         '<td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
-        '<td class="kontrak-cell" style="color:' + c[1] + '">' + esc(kon || '-') + '</td>' +
+        '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(g.kontrak || '-') + '</td>' +
         '<td>' + esc(p.tujuan || '') + '</td>' +
         '<td><span class="badge ' + badgeClass(st) + '">' + esc(st) + '</span></td>' +
         '<td><div class="aksi"><button class="btn mini btn-blue" title="Isi tujuan secara manual" onclick="editTujuanUnit(\'' + p.id + '\')">TUJUAN</button></div></td></tr>';
@@ -823,7 +824,7 @@ async function simpanAntrianList(items, sumber) {
       if (ex) {
         const stLama = ex.status || 'ANTRIAN DO';
         if (stLama !== f.status) {
-          if (f.status === 'ANTRIAN DO') { await updateRec('antrian', ex.id, { status: 'ANTRIAN DO', createdAt: Date.now() }); tambah++; } // muncul lagi di chat = daftar lagi, dapat nomor tunggu paling bawah
+          if (f.status === 'ANTRIAN DO') { await updateRec('antrian', ex.id, { status: 'ANTRIAN DO', createdAt: Date.now(), sumber: sumber }); tambah++; } // muncul lagi di chat = daftar lagi, dapat nomor tunggu paling bawah
           else { await updateRec('antrian', ex.id, { status: 'MUAT/KIRIM', muatAt: Date.now() }); pindah++; } // kata "masuk" = muat, pindah ke nomor paling bawah
         }
       } else {
@@ -930,8 +931,30 @@ function urutanAntrian(arr) { // dalam tiap kontrak: barisan tunggu dulu (paling
   const bobot = r => (r.status || 'ANTRIAN DO') === 'ANTRIAN DO' ? 0 : 1;
   return arr.slice().sort((a, b) => bobot(a) - bobot(b) || (a.createdAt || 0) - (b.createdAt || 0) || String(a.id).localeCompare(String(b.id)));
 }
+let sinkronAntrianSedang = false;
+async function jalankanSinkronAntrian() { // antrian DO selalu SAMA dengan Daftar No Polisi: yang belum ada di antrian ditambahkan, yang sudah tidak ada di daftar dikeluarkan
+  if (sinkronAntrianSedang || !state.polisi.length) return;
+  if (!COLS.every(c => terkirim[c])) return; // tunggu semua data termuat dulu supaya tidak dobel
+  const ada = new Set(state.antrian.map(a => normPol(a.polisi)));
+  const kurang = state.polisi.filter(p => p.polisi && !ada.has(normPol(p.polisi)));
+  const batasBaru = Date.now() - 10 * 60 * 1000; // entri yang baru saja dibuat jangan disentuh dulu (tunggu daftar no polisinya tersimpan)
+  const buang = state.antrian.filter(a => !state.polisi.some(p => normPol(p.polisi) === normPol(a.polisi)) && (a.createdAt || 0) < batasBaru);
+  if (!kurang.length && !buang.length) return;
+  sinkronAntrianSedang = true;
+  try {
+    for (const p of kurang) {
+      const k = normPol(p.polisi);
+      if (ada.has(k)) continue;
+      ada.add(k);
+      await addRec('antrian', { polisi: p.polisi, status: 'ANTRIAN DO', sumber: 'MASTER', tanggal: todayStr() });
+    }
+    for (const a of buang) await deleteRec('antrian', a.id);
+  } catch (e) {}
+  sinkronAntrianSedang = false;
+}
 function renderAntrian() {
   // entri antrian TIDAK terhapus: ANTRIAN DO = barisan tunggu, klik MUAT/KIRIM = pindah ke nomor paling bawah, paste chat lagi = balik ANTRIAN DO
+  jalankanSinkronAntrian();
   const arr = urutanAntrian(state.antrian);
   $('countAntrian').textContent = arr.length + ' unit';
   const tb = $('tbodyAntrian');
@@ -952,7 +975,6 @@ function renderAntrian() {
         '<td class="nowrap">' + fmtWaktu(r.createdAt) + '</td>' +
         '<td><div class="aksi">' +
         '<button class="btn mini btn-blue" title="Buat laporan dari antrian" onclick="buatLaporanDariAntrian(\'' + r.id + '\')">Laporan</button>' +
-        '<button class="btn mini btn-red" title="Hapus dari antrian" onclick="hapusAntrian(\'' + r.id + '\')">Hapus</button>' +
         '</div></td></tr>';
       }).join('') +
       '<tr><td style="font-weight:800;color:#94a3b8">' + (g.items.length + 1) + '</td><td colspan="5" style="color:#94a3b8">(menunggu antrian berikut)</td></tr>';
@@ -963,7 +985,7 @@ async function setStatusAntrian(id, status) {
   if ((r.status || 'ANTRIAN DO') === status) return;
   try {
     if (status === 'ANTRIAN DO') { // daftar lagi: masuk barisan tunggu, dapat nomor paling bawah
-      await updateRec('antrian', id, { status: 'ANTRIAN DO', createdAt: Date.now() });
+      await updateRec('antrian', id, { status: 'ANTRIAN DO', createdAt: Date.now(), sumber: 'MANUAL' });
       showToast(r.polisi + ' masuk barisan lagi - dapat nomor tunggu paling bawah');
     } else { // MUAT/KIRIM: pindah ke nomor paling bawah, tidak terhapus
       await updateRec('antrian', id, { status: 'MUAT/KIRIM', muatAt: Date.now() });
@@ -971,18 +993,7 @@ async function setStatusAntrian(id, status) {
     }
   } catch (err) { alert('Gagal menyimpan: ' + errText(err)); }
 }
-async function hapusAntrian(id) {
-  const r = state.antrian.find(x => x.id === id); if (!r) return;
-  if (!confirm('Hapus ' + r.polisi + ' dari antrian?')) return;
-  try { await deleteRec('antrian', id); showToast('Antrian dihapus'); }
-  catch (err) { alert('Gagal menghapus: ' + errText(err)); }
-}
-async function kosongkanAntrian() {
-  if (!state.antrian.length) { alert('Antrian sudah kosong.'); return; }
-  if (!confirm('Kosongkan SEMUA antrian (' + state.antrian.length + ' unit)?')) return;
-  try { for (const a of state.antrian.slice()) await deleteRec('antrian', a.id); showToast('Antrian dikosongkan'); }
-  catch (err) { alert('Gagal mengosongkan: ' + errText(err)); }
-}
+// antrian DO mengikuti Daftar No Polisi: tambah/hapus unit cukup lewat Daftar No Polisi, antrian & rekap ikut otomatis
 function buatLaporanDariAntrian(id) {
   const r = state.antrian.find(x => x.id === id); if (!r) return;
   setTab('input');
@@ -1160,7 +1171,14 @@ async function hapusMaster(col, id) {
   const rec = state[col].find(x => x.id === id); if (!rec) return;
   const nm = col === 'polisi' ? rec.polisi : rec.nama;
   if (!confirm('Hapus "' + nm + '" dari master ' + col.toUpperCase() + '?')) return;
-  try { await deleteRec(col, id); showToast('Data dihapus'); }
+  try {
+    await deleteRec(col, id);
+    if (col === 'polisi') { // hapus di daftar no polisi = ikut keluar dari Antrian DO dan Rekap
+      const ex = state.antrian.find(a => normPol(a.polisi) === normPol(rec.polisi));
+      if (ex) await deleteRec('antrian', ex.id);
+    }
+    showToast('Data dihapus');
+  }
   catch (err) { alert('Gagal menghapus: ' + errText(err)); }
 }
 
@@ -1232,7 +1250,6 @@ function bindEvents() {
   $('btnAntAmbil').addEventListener('click', () => previewAntrian($('antText').value, 'TEMPEL'));
   $('btnAntBersih').addEventListener('click', () => { $('antText').value = ''; });
   $('btnAntWa').addEventListener('click', waAntrian);
-  $('btnAntKosong').addEventListener('click', kosongkanAntrian);
   $('formAntrianManual').addEventListener('submit', submitAntrianManual);
 }
 
