@@ -1392,7 +1392,10 @@ function writeExcel(baseName, sheets) {
     const wb = XLSX.utils.book_new();
     sheets.forEach(sh => {
       const ws = XLSX.utils.aoa_to_sheet(sh.aoa);
-      ws['!cols'] = (sh.aoa[0] || []).map(h => ({ wch: Math.max(10, String(h || '').length + 6) }));
+      const lebar = [];
+      sh.aoa.forEach(row => (row || []).forEach((c, i) => { lebar[i] = Math.max(lebar[i] || 10, String(c == null ? '' : c).length + 4); }));
+      ws['!cols'] = lebar.map(w => ({ wch: w }));
+      if (sh.merges && sh.merges.length) ws['!merges'] = sh.merges.map(m => XLSX.utils.encode_range(m));
       XLSX.utils.book_append_sheet(wb, ws, sh.name);
     });
     XLSX.writeFile(wb, baseName + '.xlsx');
@@ -1409,32 +1412,103 @@ function writeExcel(baseName, sheets) {
     alert('Modul Excel tidak termuat (cek internet). Data disimpan sebagai CSV: ' + baseName + '.csv');
   }
 }
-function exportHarian() {
-  const rows = visibleLaporan();
-  if (!rows.length) { alert('Tidak ada data untuk diexport.'); return; }
-  const name = showAll ? 'Rekap_Semua_Data' : 'Rekap_Harian_' + ($('rTanggal').value || todayStr());
-  writeExcel(name, [{ name: 'Rekap', aoa: rowsToAoa(rows) }]);
+const NAMA_BULAN_ID = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
+const namaBulanId = m => { const p = String(m || '').split('-'); return (NAMA_BULAN_ID[(parseInt(p[1], 10) || 1) - 1] || m || '-') + ' ' + (p[0] || ''); };
+const akhirBulan = m => { const p = String(m || '').split('-'); return kunciHari(new Date(parseInt(p[0], 10) || 2000, (parseInt(p[1], 10) || 1), 0).getTime()); }; // tanggal terakhir suatu bulan
+const hariBerikutnya = tgl => { const d = new Date(String(tgl || '') + 'T00:00:00'); if (isNaN(d.getTime())) return tgl; d.setDate(d.getDate() + 1); return kunciHari(d.getTime()); }; // tanggal esoknya
+function statusDariLaporanHarian(st) { // samakan label status laporan dengan label papan rekap
+  const s = String(st || '').toUpperCase();
+  if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN';
+  if (s.indexOf('INAP') > -1) return 'INAP';
+  if (s.indexOf('MUAT') > -1 || s.indexOf('LOADING') > -1 || s.indexOf('PENDING') > -1) return 'MUAT/KIRIM';
+  if (s.indexOf('STANDBY') > -1 || s.indexOf('ANTRIAN') > -1 || s === '') return 'STANDBY';
+  return s; // status lain (mis. KIRIM) tampil apa adanya
 }
-function exportBulanan() {
+function statusHarianUnit(p, tanggal) { // TUJUAN & STATUS unit pada suatu tanggal untuk Excel Harian: diambil data yang PERTAMA pada hari itu; bila unit mendaftar DO lagi setelah kembali dari kirim, status tunggunya dihitung mulai tanggal ESOKNYA
+  const pertama = {}; // laporan PERTAMA tiap tanggal (data yang pertama aja)
+  state.laporan.forEach(l => {
+    if (normPol(l.polisi) !== normPol(p.polisi) || !l.tanggal) return;
+    if (!pertama[l.tanggal] || (l.createdAt || 0) < (pertama[l.tanggal].createdAt || 0)) pertama[l.tanggal] = l;
+  });
+  const kandidat = [];
+  Object.keys(pertama).forEach(t => { // laporan dengan tanggal <= tanggal yang diminta; yang paling baru yang dipakai (mengikuti perjalanan unit)
+    if (t <= tanggal) kandidat.push({ efektif: t, urut: pertama[t].createdAt || 0, tujuan: pertama[t].tujuan || '-', status: statusDariLaporanHarian(pertama[t].status) });
+  });
+  state.antrian.forEach(a => { // mendaftar DO lagi (lewat paste WA / dropdown) = status tunggu, berlaku mulai tanggal ESOKNYA
+    if (normPol(a.polisi) !== normPol(p.polisi) || ((a.status || 'ANTRIAN DO') !== 'ANTRIAN DO' && (a.status || '') !== 'STANDBY')) return;
+    if ((a.sumber || '') === 'MASTER' || !(a.createdAt > 0)) return;
+    const efektif = hariBerikutnya(kunciHari(a.createdAt));
+    if (efektif <= tanggal) kandidat.push({ efektif: efektif, urut: 0, tujuan: '-', status: 'STANDBY' });
+  });
+  if (tanggal === todayStr() && !pertama[tanggal]) { // hari ini BELUM ada laporan: pakai status papan rekap sekarang (sama seperti rekap harian); kalau sudah ada laporan, data PERTAMA hari itu yang menang
+    const d = detailStatusRekap(p);
+    if (d.st !== 'STANDBY') kandidat.push({ efektif: tanggal, urut: Date.now(), tujuan: p.tujuan || '-', status: d.st }); // standby hari ini biarkan aturan esoknya yang menentukan
+  }
+  if (!kandidat.length) return { tujuan: '-', status: 'STANDBY' }; // belum ada data sama sekali
+  kandidat.sort((a, b) => a.efektif < b.efektif ? -1 : a.efektif > b.efektif ? 1 : (a.urut || 0) - (b.urut || 0));
+  const hasil = kandidat[kandidat.length - 1];
+  return { tujuan: hasil.tujuan || '-', status: hasil.status || 'STANDBY' };
+}
+function sheetHarianUnit(tgl) { // Excel Harian: data dari Daftar No Polisi dikelompokkan per kontrak; judul # KONTRAK ... + tanggal, header NO/NO POLISI/KONTRAK/TUJUAN/STATUS
+  const unit = urutSepertiDaftarPolisi();
+  if (!unit.length) { alert('Tidak ada data untuk diexport.'); return null; }
+  const tglTampil = fmtDate(tgl);
+  const aoa = [['LAPORAN HARIAN SINAR MAJU JAYA - ' + tglTampil]];
+  grupPolisi(unit).forEach(g => {
+    aoa.push([]);
+    aoa.push(['# KONTRAK ' + (g.kontrak || '(BELUM DIISI)') + ' - ' + tglTampil]);
+    aoa.push(['NO', 'NO POLISI', 'KONTRAK', 'TUJUAN', 'STATUS']);
+    g.items.forEach((p, i) => {
+      const s = statusHarianUnit(p, tgl);
+      aoa.push([i + 1, p.polisi, g.kontrak ? 'KONTRAK ' + g.kontrak : '(BELUM DIISI)', s.tujuan || '-', s.status || 'STANDBY']);
+    });
+  });
+  return [{ name: 'Rekap', aoa: aoa }];
+}
+function exportHarian() { // tombol Unduh Excel Harian
+  const tgl = $('rTanggal').value || todayStr();
+  const sheets = sheetHarianUnit(tgl);
+  if (!sheets) return;
+  writeExcel('Rekap_Harian_' + tgl, sheets);
+}
+function aoaBulananUnit(m) { // sheet Rekap Per Unit: BULAN di paling atas, lalu blok per kontrak dari Daftar No Polisi; tiap unit dihitung AKUMULASI jumlah hari INAP / KIRIM / STORING PERBAIKAN sepanjang bulan
+  const awal = String(m || todayStr()).slice(0, 7) + '-01';
+  const akhir = akhirBulan(m);
+  const batas = akhir > todayStr() ? todayStr() : akhir; // tanggal yang belum terjadi tidak dihitung
+  const hari = [];
+  for (let t = awal; t <= batas;) { hari.push(t); t = hariBerikutnya(t); }
+  const unit = urutSepertiDaftarPolisi();
+  const aoa = [['BULAN ' + namaBulanId(m) + ' - SINAR MAJU JAYA']];
+  const merges = [];
+  let baris = 0; // nomor baris sheet terakhir yang terisi (0-based)
+  grupPolisi(unit).forEach(g => {
+    aoa.push([]);
+    baris++;
+    aoa.push(['# KONTRAK ' + (g.kontrak || '(BELUM DIISI)')]);
+    baris++;
+    aoa.push(['NO', 'NO POLISI', 'KONTRAK', 'STATUS (JUMLAH HARI)', '', '', '']);
+    merges.push({ s: { r: baris, c: 3 }, e: { r: baris, c: 6 } }); // gabungkan judul STATUS di atas 4 kolom hitungan
+    baris++;
+    aoa.push(['', '', '', 'INAP', 'KIRIM', 'STORING PERBAIKAN', 'TOTAL']);
+    baris++;
+    g.items.forEach((p, i) => {
+      const hit = { INAP: 0, KIRIM: 0, 'STORING PERBAIKAN': 0 };
+      hari.forEach(t => { const s = statusHarianUnit(p, t).status; if (hit[s] != null) hit[s]++; });
+      aoa.push([i + 1, p.polisi, g.kontrak ? 'KONTRAK ' + g.kontrak : '(BELUM DIISI)', hit.INAP, hit.KIRIM, hit['STORING PERBAIKAN'], hit.INAP + hit.KIRIM + hit['STORING PERBAIKAN']]);
+      baris++;
+    });
+  });
+  return { aoa: aoa, merges: merges };
+}
+function exportBulanan() { // tombol Unduh Excel Bulanan
   const m = $('rBulan').value;
   if (!m) { alert('Pilih bulan terlebih dahulu.'); return; }
   const rows = sortLaporan(state.laporan.filter(l => (l.tanggal || '').startsWith(m)));
   if (!rows.length) { alert('Tidak ada data pada bulan ' + m + '.'); return; }
-  const per = {};
-  rows.forEach(r => {
-    const k = r.polisi || '-';
-    per[k] = per[k] || { polisi: k, KIRIM: 0, STANDBY: 0, INAP: 0, 'STORING PERBAIKAN': 0, total: 0 };
-    const o = per[k];
-    const s = (r.status || '').toUpperCase();
-    if (o[s] != null) o[s]++;
-    o.total++;
-  });
-  const aoa2 = [['NO POLISI', 'KIRIM', 'STANDBY', 'INAP', 'STORING PERBAIKAN', 'TOTAL']];
-  Object.values(per).sort((a, b) => a.polisi.localeCompare(b.polisi))
-    .forEach(o => aoa2.push([o.polisi, o.KIRIM, o.STANDBY, o.INAP, o['STORING PERBAIKAN'], o.total]));
+  const bulanan = aoaBulananUnit(m);
   writeExcel('Rekap_Bulanan_' + m, [
     { name: 'Laporan', aoa: rowsToAoa(rows) },
-    { name: 'Rekap Per Unit', aoa: aoa2 }
+    { name: 'Rekap Per Unit', aoa: bulanan.aoa, merges: bulanan.merges }
   ]);
 }
 
