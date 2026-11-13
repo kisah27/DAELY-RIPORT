@@ -214,8 +214,8 @@ service cloud.firestore {
     <section class="panel" id="panel-rekap">
       <div class="card">
         <h2>REKAP LAPORAN <span class="cnt" id="rekapCount">0 data</span></h2>
-        <details class="cara"><summary>Cara pakai REKAP: papan status semua unit per kontrak, urutan &amp; status otomatis. Tujuan lewat dropdown, ada Edit/Hapus per unit &amp; tombol UNDO. <span class="hint">(ketuk untuk buka/tutup penjelasan lengkap)</span></summary>
-        <p class="desc"><b>Papan status semua unit, dikelompokkan per KONTRAK</b> (baris pembatas warna sama seperti Antrian DO dan Daftar No Polisi). Di dalam tiap kontrak urutan no polisi mengikuti status: <b>INAP, KIRIM, MUAT/KIRIM, STANDBY, STORING PERBAIKAN</b> - begitu status berubah, no polisi otomatis pindah ke posisi status barunya. Statusnya otomatis: mengantri DO = STANDBY, MUAT/KIRIM dari antrian. <b>Unit KIRIM yang tidak daftar lagi otomatis jadi INAP mulai jam 22:00 malam pada hari yang sama</b> (tujuan tetap seperti saat KIRIM). Tidak ada perubahan dalam antrian DO selama 24 jam = STANDBY. STORING PERBAIKAN tidak berubah sampai unit didaftarkan lagi ke Antrian DO. Tujuan diubah langsung lewat dropdown di tiap baris (pilihannya dari Daftar Tujuan), ada tombol <b>Edit</b> / <b>Hapus</b> per unit, dan tombol <b>UNDO</b> di atas tabel untuk mengembalikan hapus/edit yang salah. Tombol Excel di bawah tetap mengikuti filter tanggal laporan. Di bagian paling bawah ada <b>TABEL KETERANGAN</b>: pilih no polisi lewat dropdown, kontrak terisi otomatis, tulis keterangan manual (kotaknya melebar sendiri kalau tulisannya panjang, isinya sama dengan di Antrian DO).</p></details>
+        <details class="cara"><summary>Cara pakai REKAP: papan status semua unit per kontrak, urutan &amp; status otomatis; isi TUJUAN = otomatis KIRIM; KIRIM/INAP bertanggal-waktu. Ada Edit/Hapus per unit &amp; tombol UNDO. <span class="hint">(ketuk untuk buka/tutup penjelasan lengkap)</span></summary>
+        <p class="desc"><b>Papan status semua unit, dikelompokkan per KONTRAK</b> (baris pembatas warna sama seperti Antrian DO dan Daftar No Polisi). Di dalam tiap kontrak urutan no polisi mengikuti status: <b>INAP, KIRIM, MUAT/KIRIM, STANDBY, STORING PERBAIKAN</b> - begitu status berubah, no polisi otomatis pindah ke posisi status barunya. Statusnya otomatis: mengantri DO = STANDBY, MUAT/KIRIM dari antrian. <b>Unit KIRIM yang tidak daftar lagi otomatis jadi INAP mulai jam 22:00 malam pada hari yang sama</b> - tanggal &amp; waktu di bawah status berubah otomatis menjadi jam 22:00 saat itu, dan INAP berlaku terus selama unit belum daftar DO lagi. <b>MUAT/KIRIM tidak ikut hitungan tanggal &amp; waktu</b> (unitnya masih di pabrik). <b>Begitu TUJUAN diisi lewat dropdown, unit otomatis berubah jadi KIRIM</b> dengan tanggal &amp; waktu tercatat otomatis. STORING PERBAIKAN tidak berubah sampai unit didaftarkan lagi ke Antrian DO. Tujuan diubah langsung lewat dropdown di tiap baris (pilihannya dari Daftar Tujuan), ada tombol <b>Edit</b> / <b>Hapus</b> per unit, dan tombol <b>UNDO</b> di atas tabel untuk mengembalikan hapus/edit yang salah. Tombol Excel di bawah tetap mengikuti filter tanggal laporan. Di bagian paling bawah ada <b>TABEL KETERANGAN</b>: pilih no polisi lewat dropdown, kontrak terisi otomatis, tulis keterangan manual (kotaknya melebar sendiri kalau tulisannya panjang, isinya sama dengan di Antrian DO).</p></details>
         <div class="chips" id="statsRow"></div>
         <div class="filterbar">
           <div><label for="rTanggal">TANGGAL</label><input type="date" id="rTanggal"></div>
@@ -259,8 +259,8 @@ service cloud.firestore {
     <section class="panel" id="panel-antrian">
       <div class="card">
         <h2>ANTRIAN DO <span class="cnt" id="countAntrian">0 unit</span></h2>
-        <details class="cara"><summary>Cara pakai ANTRIAN DO: tempel chat WA -> AMBIL NO POLISI -> SIMPAN. Barisan bernomor per kontrak, status dua arah dengan rekap, ada Tabel Keterangan di paling bawah. <span class="hint">(ketuk untuk buka/tutup penjelasan lengkap)</span></summary>
-        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. <b>Antrian = barisan bernomor untuk SETIAP kontrak: nomor mulai lagi dari 1 di tiap kontrak, no 1 paling lama menunggu, antrian baru selalu dapat nomor paling bawah (2, 3, dan seterusnya).</b> Baris antrian TIDAK terhapus: begitu diubah jadi MUAT/KIRIM, barisnya pindah ke nomor paling bawah dengan status MUAT/KIRIM. Begitu no polisinya muncul lagi di hasil tempel WhatsApp, statusnya kembali ANTRIAN DO dan dapat nomor tunggu paling bawah. Baris chat yang ada kata <b>masuk</b> langsung jadi MUAT/KIRIM. Di setiap kepala kontrak ada tombol <b>WA</b> untuk mengirim daftar antrian kontrak itu saja. <b>Antrian DO selalu lengkap: semua no polisi di Daftar No Polisi otomatis ada di sini</b>, dan sebaliknya no polisi baru di antrian otomatis tercatat di Daftar No Polisi. Bedanya: susunan di Daftar No Polisi permanen, susunan di antrian DO berubah-ubah mengikuti statusnya. Tambah/hapus unit cukup lewat Daftar No Polisi - antrian ikut otomatis. <b>Status yang bisa dipilih: ANTRIAN DO (barisan tunggu bernomor 1, 2, 3 - paling lama menunggu = no 1), lalu di bawahnya tanpa nomor: INAP, STANDBY, STORING PERBAIKAN, dan MUAT/KIRIM paling bawah.</b> No polisi yang muncul lagi di hasil paste padahal sudah ada di antrian TIDAK dibuat dobel - lokasinya saja yang disesuaikan: daftar lagi berarti nomor tunggu paling bawah dan nomor di atasnya otomatis menyesuaikan. Baris chat yang ada kata <b>masuk/muat/loading</b> langsung jadi MUAT/KIRIM; kata <b>storing/perbaikan</b> jadi STORING PERBAIKAN; <b>inap</b> jadi INAP; <b>standby</b> jadi STANDBY. Perubahan status di sini langsung mengubah papan REKAP, dan sebaliknya: begitu laporan disimpan dan status di papan REKAP berubah, status unit di antrian DO langsung ikut otomatis (dua arah). Di bagian paling bawah ada <b>TABEL KETERANGAN</b>: pilih no polisi lewat dropdown, kontrak terisi otomatis, tulis keterangan manual (kotaknya melebar sendiri kalau tulisannya panjang, isinya sama dengan di papan rekap). Tombol <b>UNDO</b> di atas tabel mengembalikan hapus/edit yang salah.</p></details>
+        <details class="cara"><summary>Cara pakai ANTRIAN DO: tempel chat WA -> AMBIL NO POLISI -> SIMPAN. Barisan bernomor per kontrak, status dua arah dengan rekap, sisa antrian kemarin otomatis STANDBY saat ganti tanggal, ada Tabel Keterangan di paling bawah. <span class="hint">(ketuk untuk buka/tutup penjelasan lengkap)</span></summary>
+        <p class="desc">Ambil no polisi dari chat grup WhatsApp: buka grup -> <b>salin (copy) pesan-pesannya</b> -> <b>tempel (paste) di kotak</b> -> klik AMBIL NO POLISI -> muncul <b>pratinjau centang</b> -> SIMPAN. <b>Antrian = barisan bernomor untuk SETIAP kontrak: nomor mulai lagi dari 1 di tiap kontrak, no 1 paling lama menunggu, antrian baru selalu dapat nomor paling bawah (2, 3, dan seterusnya).</b> Baris antrian TIDAK terhapus: begitu diubah jadi MUAT/KIRIM, barisnya pindah ke nomor paling bawah dengan status MUAT/KIRIM. Begitu no polisinya muncul lagi di hasil tempel WhatsApp, statusnya kembali ANTRIAN DO dan dapat nomor tunggu paling bawah. Baris chat yang ada kata <b>masuk</b> langsung jadi MUAT/KIRIM. Di setiap kepala kontrak ada tombol <b>WA</b> untuk mengirim daftar antrian kontrak itu saja. <b>Antrian DO selalu lengkap: semua no polisi di Daftar No Polisi otomatis ada di sini</b>, dan sebaliknya no polisi baru di antrian otomatis tercatat di Daftar No Polisi. Bedanya: susunan di Daftar No Polisi permanen, susunan di antrian DO berubah-ubah mengikuti statusnya. Tambah/hapus unit cukup lewat Daftar No Polisi - antrian ikut otomatis. <b>Status yang bisa dipilih: ANTRIAN DO (barisan tunggu bernomor 1, 2, 3 - paling lama menunggu = no 1), lalu di bawahnya tanpa nomor: INAP, STANDBY, STORING PERBAIKAN, dan MUAT/KIRIM paling bawah.</b> <b>Begitu ganti tanggal, unit yang masih ANTRIAN DO dari hari sebelumnya otomatis berubah jadi STANDBY</b> (turun dari barisan bernomor; daftarkan lagi lewat paste WA supaya masuk barisan lagi). No polisi yang muncul lagi di hasil paste padahal sudah ada di antrian TIDAK dibuat dobel - lokasinya saja yang disesuaikan: daftar lagi berarti nomor tunggu paling bawah dan nomor di atasnya otomatis menyesuaikan. Baris chat yang ada kata <b>masuk/muat/loading</b> langsung jadi MUAT/KIRIM; kata <b>storing/perbaikan</b> jadi STORING PERBAIKAN; <b>inap</b> jadi INAP; <b>standby</b> jadi STANDBY. Perubahan status di sini langsung mengubah papan REKAP, dan sebaliknya: begitu laporan disimpan dan status di papan REKAP berubah, status unit di antrian DO langsung ikut otomatis (dua arah). Di bagian paling bawah ada <b>TABEL KETERANGAN</b>: pilih no polisi lewat dropdown, kontrak terisi otomatis, tulis keterangan manual (kotaknya melebar sendiri kalau tulisannya panjang, isinya sama dengan di papan rekap). Tombol <b>UNDO</b> di atas tabel mengembalikan hapus/edit yang salah.</p></details>
         <div class="row" style="margin-bottom:12px">
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/BEFGPoZY0bGCB8KwEYy7HI?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 1</a>
           <a class="btn btn-ghost" style="text-decoration:none" href="https://chat.whatsapp.com/CLRIPktR8dU32jwRl7EqBj?s=cl&amp;p=a&amp;iam=2" target="_blank" rel="noopener">Buka Grup WA 2</a>
@@ -480,7 +480,7 @@ async function init() {
   }
   renderAll();
   handleAntrianUrl();
-  setInterval(() => { if (state.polisi.length) renderRekap(); }, 60000); // papan status REKAP menyegarkan sendiri (aturan jam 22:00)
+  setInterval(() => { if (state.polisi.length) { jalankanGantiHari(); renderRekap(); } }, 60000); // rekap menyegarkan sendiri (aturan jam 22:00) + cek ganti tanggal antrian
 }
 function seedStatusOnline() {
   const batch = db.batch();
@@ -611,19 +611,29 @@ async function ketSimpan(id, v) { // keterangan disimpan di Daftar No Polisi (sa
   try { await updateRec('polisi', id, { ket: v2 }); showToast('Keterangan ' + rec.polisi + ' disimpan'); }
   catch (err) { alert('Gagal menyimpan: ' + errText(err)); }
 }
-async function setTujuanUnit(id, v) { // dropdown TUJUAN di papan rekap, pilihannya dari Daftar Tujuan
+async function setTujuanUnit(id, v) { // dropdown TUJUAN di papan rekap; begitu tujuan diisi, unit otomatis berubah jadi KIRIM
   const rec = state.polisi.find(x => x.id === id); if (!rec) return;
   const v2 = String(v || '').trim().toUpperCase();
   if ((rec.tujuan || '') === v2) return;
-  snapshotUndo('ganti tujuan ' + rec.polisi, ['polisi']);
-  try { await updateRec('polisi', id, { tujuan: v2 }); showToast('Tujuan ' + rec.polisi + ' disimpan'); }
-  catch (err) { alert('Gagal menyimpan: ' + errText(err)); }
+  const jadiKirim = !!v2 && detailStatusRekap(rec).st !== 'KIRIM'; // tujuan diisi & unit belum KIRIM = langsung KIRIM
+  snapshotUndo(jadiKirim ? 'tujuan ' + rec.polisi + ' (otomatis KIRIM)' : 'ganti tujuan ' + rec.polisi, jadiKirim ? ['polisi', 'antrian'] : ['polisi']); // bisa dikembalikan lewat UNDO
+  try {
+    if (jadiKirim) {
+      const an = state.antrian.find(a => normPol(a.polisi) === normPol(rec.polisi));
+      if (an) await updateRec('antrian', an.id, { status: 'MUAT/KIRIM', muatAt: Date.now() - 1000 }); // antrian ikut; sedikit di bawah waktu tujuan supaya rekap menunjukkan KIRIM
+      await updateRec('polisi', id, { tujuan: v2, kirimAt: Date.now() }); // tanggal & waktu KIRIM tercatat otomatis
+      showToast(rec.polisi + ' otomatis KIRIM (tujuan terisi)');
+    } else {
+      await updateRec('polisi', id, { tujuan: v2 });
+      showToast('Tujuan ' + rec.polisi + ' disimpan');
+    }
+  } catch (err) { alert('Gagal menyimpan: ' + errText(err)); }
 }
 function optTujuanRekap(p) { // dropdown tujuan untuk satu baris rekap
   const cur = p.tujuan || '';
   const nama = sortName(state.tujuan, 'nama').map(x => x.nama || '');
   if (cur && nama.indexOf(cur) < 0) nama.push(cur); // tujuan lama yang belum ada di daftar tetap tampil
-  return '<select class="sel-mini" style="max-width:150px" onchange="setTujuanUnit(\'' + p.id + '\', this.value)">' +
+  return '<select class="sel-mini" style="width:100%;min-width:250px;font-size:11px" onchange="setTujuanUnit(\'' + p.id + '\', this.value)">' +
     '<option value=""' + (cur ? '' : ' selected') + '>(kosong)</option>' +
     nama.map(n => '<option value="' + esc(n) + '"' + (n === cur ? ' selected' : '') + '>' + esc(n) + '</option>').join('') +
     '</select>';
@@ -772,37 +782,42 @@ const STATUS_URUT_REKAP = ['INAP', 'KIRIM', 'MUAT/KIRIM', 'STANDBY', 'STORING PE
 const CHIP_WARNA = { 'INAP': 'c-blue', 'KIRIM': 'c-green', 'MUAT/KIRIM': 'c-navy', 'STANDBY': 'c-amber', 'STORING PERBAIKAN': 'c-red' };
 const kunciHari = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
 const jamMenitSekarang = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
-function statusRekap(p) { // status otomatis per unit: ditentukan peristiwa TERBARU (perubahan antrian atau laporan), plus aturan jam 22:00 (KIRIM jadi INAP)
-  const hariIni = kunciHari(Date.now());
-  const lewat22 = jamMenitSekarang() >= 22 * 60;
+const jam22Dari = tgl => { const d = new Date(String(tgl || '') + 'T22:00:00'); return isNaN(d.getTime()) ? 0 : d.getTime(); }; // jam 22:00 pada suatu tanggal
+const lewatJam22 = tgl => { const t22 = jam22Dari(tgl); return t22 > 0 && Date.now() >= t22; }; // sudah lewat jam 22:00 pada tanggal itu?
+function detailStatusRekap(p) { // status otomatis + tanggal/waktu sejak status itu berlaku; ditentukan peristiwa TERBARU (antrian, laporan, atau pengisian tujuan)
   const an = state.antrian.find(a => normPol(a.polisi) === normPol(p.polisi));
   const l = sortLaporan(state.laporan.filter(x => normPol(x.polisi) === normPol(p.polisi)))[0];
   // waktu aktivitas antrian: klik MUAT/KIRIM selalu dihitung; pendaftaran dihitung kalau bukan entri buatan sinkron otomatis
   const waktuAntrian = an ? ((an.status || 'ANTRIAN DO') === 'MUAT/KIRIM' ? (an.muatAt || an.createdAt || 0) : (an.sumber === 'MASTER' ? 0 : (an.createdAt || 0))) : 0;
   const waktuLaporan = l ? (l.createdAt || 0) : 0;
-  if (waktuAntrian > 0 && waktuAntrian >= waktuLaporan) {
+  const waktuTujuan = p.kirimAt || 0; // tujuan diisi pengurus -> peristiwa KIRIM tercatat otomatis
+  const terbaru = Math.max(waktuAntrian, waktuLaporan, waktuTujuan);
+  if (!terbaru) return { st: 'STANDBY', waktu: 0 }; // tanpa aktivitas = standby
+  if (waktuTujuan > 0 && terbaru === waktuTujuan) { // KIRIM karena tujuan baru saja diisi; jadi INAP jam 22:00 pada hari yang sama
+    const tglK = kunciHari(waktuTujuan);
+    if (lewatJam22(tglK)) return { st: 'INAP', waktu: jam22Dari(tglK) }; // tanggal & waktu berubah otomatis jadi jam 22:00
+    return { st: 'KIRIM', waktu: waktuTujuan };
+  }
+  if (waktuAntrian > 0 && terbaru === waktuAntrian) {
     const st = an.status || 'ANTRIAN DO';
-    if (st === 'MUAT/KIRIM') { // muat/kirim yang tidak daftar lagi -> INAP mulai jam 22:00 pada hari yang sama
-      const hariMuat = kunciHari(an.muatAt || an.createdAt || 0);
-      if (hariMuat < hariIni || (hariMuat === hariIni && lewat22)) return 'INAP';
-      return 'MUAT/KIRIM';
-    }
-    if (st === 'INAP') return 'INAP'; // status dipasang langsung di antrian
-    if (st === 'STORING PERBAIKAN') return 'STORING PERBAIKAN'; // tetap storing sampai didaftarkan lagi ke antrian
-    return 'STANDBY'; // ANTRIAN DO / STANDBY = tunggu DO
+    if (st === 'MUAT/KIRIM') return { st: 'MUAT/KIRIM', waktu: 0 }; // masih di pabrik: tetap MUAT/KIRIM, TANPA hitungan tanggal & waktu (tidak ikut aturan jam 22:00)
+    if (st === 'INAP') return { st: 'INAP', waktu: waktuAntrian }; // status dipasang langsung di antrian
+    if (st === 'STORING PERBAIKAN') return { st: 'STORING PERBAIKAN', waktu: 0 }; // tetap storing sampai didaftarkan lagi ke antrian
+    return { st: 'STANDBY', waktu: 0 }; // ANTRIAN DO / STANDBY = tunggu DO
   }
   if (l) {
     const st = String(l.status || '').toUpperCase();
-    if (st.indexOf('STORING') > -1 || st.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN'; // tetap storing sampai didaftarkan lagi ke antrian
-    if (st.indexOf('INAP') > -1) return 'INAP';
-    if (st === 'KIRIM' || st.indexOf('MUAT') > -1 || st.indexOf('LOADING') > -1 || st.indexOf('PENDING') > -1) { // di jalan: jadi INAP mulai jam 22:00 pada tanggal yang sama, tujuan tetap
-      const tgl = String(l.tanggal || '');
-      if (tgl < hariIni || (tgl === hariIni && lewat22)) return 'INAP';
-      return st.indexOf('MUAT') > -1 ? 'MUAT/KIRIM' : 'KIRIM';
+    if (st.indexOf('STORING') > -1 || st.indexOf('PERBAIKAN') > -1) return { st: 'STORING PERBAIKAN', waktu: 0 }; // tetap storing sampai didaftarkan lagi ke antrian
+    if (st.indexOf('INAP') > -1) return { st: 'INAP', waktu: waktuLaporan };
+    if (st === 'KIRIM') { // hanya KIRIM yang jadi INAP otomatis jam 22:00 pada hari yang sama; tanggal & waktu ikut berubah jadi jam 22:00
+      if (lewatJam22(l.tanggal)) return { st: 'INAP', waktu: jam22Dari(l.tanggal) };
+      return { st: 'KIRIM', waktu: waktuLaporan };
     }
+    if (st.indexOf('MUAT') > -1 || st.indexOf('LOADING') > -1 || st.indexOf('PENDING') > -1) return { st: 'MUAT/KIRIM', waktu: 0 }; // masih di pabrik: tetap MUAT/KIRIM, tanpa hitungan tanggal & waktu
   }
-  return 'STANDBY'; // tanpa aktivitas / tidak ada perubahan antrian DO selama 24 jam = standby
+  return { st: 'STANDBY', waktu: 0 };
 }
+function statusRekap(p) { return detailStatusRekap(p).st; } // status saja (untuk pemakaian lama)
 function statusAntrianDariLaporan(st) { // petakan status laporan (REKAP) ke status di antrian DO
   const s = String(st || '').toUpperCase();
   if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN';
@@ -811,17 +826,12 @@ function statusAntrianDariLaporan(st) { // petakan status laporan (REKAP) ke sta
   if (s.indexOf('STANDBY') > -1) return 'STANDBY';
   return 'ANTRIAN DO'; // ANTRIAN dan lainnya = daftar lagi ke barisan tunggu
 }
-function statusRekapDariLaporanBaru(st, tgl) { // status rekap setelah laporan baru ini masuk (laporan jadi peristiwa terbaru), sama seperti cabang laporan di statusRekap
-  const hariIni = kunciHari(Date.now());
-  const lewat22 = jamMenitSekarang() >= 22 * 60;
+function statusRekapDariLaporanBaru(st, tgl) { // status rekap setelah laporan baru ini masuk (laporan jadi peristiwa terbaru), sama seperti cabang laporan di detailStatusRekap
   const s = String(st || '').toUpperCase();
   if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN';
   if (s.indexOf('INAP') > -1) return 'INAP';
-  if (s === 'KIRIM' || s.indexOf('MUAT') > -1 || s.indexOf('LOADING') > -1 || s.indexOf('PENDING') > -1) {
-    const t = String(tgl || '');
-    if (t < hariIni || (t === hariIni && lewat22)) return 'INAP';
-    return s.indexOf('MUAT') > -1 ? 'MUAT/KIRIM' : 'KIRIM';
-  }
+  if (s === 'KIRIM') return lewatJam22(tgl) ? 'INAP' : 'KIRIM'; // hanya KIRIM yang berubah INAP jam 22:00; tanggal & waktu ikut jam 22:00
+  if (s.indexOf('MUAT') > -1 || s.indexOf('LOADING') > -1 || s.indexOf('PENDING') > -1) return 'MUAT/KIRIM'; // masih di pabrik: tetap MUAT/KIRIM walau lewat jam 22:00
   return 'STANDBY';
 }
 async function sinkronAntrianDariLaporan(d, tLap, sebelum, l0) { // REKAP berubah karena laporan -> status di ANTRIAN DO ikut otomatis (dua arah)
@@ -855,8 +865,8 @@ function renderRekap() { // dikelompokkan per KONTRAK; di dalam tiap kontrak uru
     $('statsRow').innerHTML = '<span class="chip c-navy">Total: 0</span>';
     return;
   }
-  const status = {};
-  daftar.forEach(p => { status[p.id] = statusRekap(p); });
+  const status = {}, waktuSt = {};
+  daftar.forEach(p => { const d = detailStatusRekap(p); status[p.id] = d.st; waktuSt[p.id] = d.waktu; });
   const bobot = st => STATUS_URUT_REKAP.indexOf(st);
   const hit = {};
   daftar.forEach(p => { const st = status[p.id]; hit[st] = (hit[st] || 0) + 1; });
@@ -871,7 +881,8 @@ function renderRekap() { // dikelompokkan per KONTRAK; di dalam tiap kontrak uru
         '<td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
         '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(g.kontrak || '-') + '</td>' +
         '<td>' + optTujuanRekap(p) + '</td>' +
-        '<td><span class="badge ' + badgeClass(st) + '">' + esc(st) + '</span></td>' +
+        '<td><span class="badge ' + badgeClass(st) + '">' + esc(st) + '</span>' +
+        (waktuSt[p.id] ? '<div style="font-size:11px;color:var(--mut);margin-top:3px;white-space:nowrap">sejak ' + fmtWaktu(waktuSt[p.id]) + '</div>' : '') + '</td>' +
         '<td><div class="aksi">' +
         '<button class="btn mini btn-blue" title="Edit no polisi / kontrak unit ini" onclick="masterEdit(\'polisi\',\'' + p.id + '\')">Edit</button>' +
         '<button class="btn mini btn-red" title="Hapus unit ini (bisa di-UNDO lewat tombol di atas)" onclick="hapusMaster(\'polisi\',\'' + p.id + '\')">Hapus</button>' +
@@ -1237,8 +1248,21 @@ async function jalankanSinkronAntrian() { // antrian DO selalu SAMA dengan Dafta
   } catch (e) {}
   sinkronAntrianSedang = false;
 }
+let gantiHariSedang = false;
+async function jalankanGantiHari() { // begitu ganti tanggal, unit yang masih ANTRIAN DO dari hari sebelumnya otomatis jadi STANDBY
+  if (gantiHariSedang || !state.antrian.length) return;
+  if (!COLS.every(c => terkirim[c])) return; // tunggu semua data termuat dulu supaya tidak dobel
+  const hariIni = kunciHari(Date.now());
+  const kedaluwarsa = state.antrian.filter(a => (a.status || 'ANTRIAN DO') === 'ANTRIAN DO' && (a.createdAt || 0) > 0 && kunciHari(a.createdAt) < hariIni);
+  if (!kedaluwarsa.length) return;
+  gantiHariSedang = true;
+  try { for (const a of kedaluwarsa) await updateRec('antrian', a.id, { status: 'STANDBY', muatAt: null }); } catch (e) {}
+  gantiHariSedang = false;
+  showToast(kedaluwarsa.length + ' unit antrian kemarin otomatis jadi STANDBY (ganti tanggal)');
+}
 function renderAntrian() {
   // entri antrian TIDAK terhapus: ANTRIAN DO = barisan tunggu, klik MUAT/KIRIM = pindah ke nomor paling bawah, paste chat lagi = balik ANTRIAN DO
+  jalankanGantiHari(); // sisa antrian hari sebelumnya otomatis STANDBY begitu ganti tanggal
   jalankanSinkronAntrian();
   const arr = urutanAntrian(state.antrian);
   $('countAntrian').textContent = arr.length + ' unit';
