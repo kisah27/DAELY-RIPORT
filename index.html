@@ -1341,7 +1341,7 @@ function waAntrianKontrak(kontrak) { // kirim antrian satu kontrak lewat WhatsAp
   const arr = urutanAntrian(anggota);
   if (!arr.length) { alert('Antrian kontrak itu masih kosong.'); return; }
   let t = 'ANTRIAN DO - KONTRAK ' + (key || '(BELUM DIISI)') + ' - SINAR MAJU JAYA\n';
-  arr.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
+  arr.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + '\n'; });
   t += '\nTotal: ' + arr.length + ' unit';
   waOpen(t);
 }
@@ -1351,7 +1351,7 @@ function waAntrian() {
   let total = 0;
   grupAntrian(urutanAntrian(state.antrian)).forEach(g => {
     t += '\n# KONTRAK ' + (g.kontrak || '(BELUM DIISI)') + '\n';
-    g.items.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + ' - ' + (r.status || 'ANTRIAN DO') + '\n'; });
+    g.items.forEach((r, i) => { t += (i + 1) + '. ' + r.polisi + '\n'; });
     total += g.items.length;
   });
   t += '\nTotal: ' + total + ' unit';
