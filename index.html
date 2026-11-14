@@ -421,8 +421,8 @@ const KONTRAK_LIST = [
   "KONTRAK SDD/CDD",
   "KONTRAK SDD/CDD LONG"
 ];
-const STATUS_DEFAULT = ["KIRIM", "STANDBY", "INAP", "STORING PERBAIKAN"];
-const STATUS_IDS = { "KIRIM":"st-kirim", "STANDBY":"st-standby", "INAP":"st-inap", "STORING PERBAIKAN":"st-storing-perbaikan" };
+const STATUS_DEFAULT = ["KIRIM", "STANDBY", "PENDING", "INAP", "STORING PERBAIKAN"]; // PENDING = status bawaan (teks ada kata "pending" = status PENDING)
+const STATUS_IDS = { "KIRIM":"st-kirim", "STANDBY":"st-standby", "PENDING":"st-pending", "INAP":"st-inap", "STORING PERBAIKAN":"st-storing-perbaikan" };
 const COLS = ["polisi", "tujuan", "status", "laporan", "antrian"];
 
 const state = { polisi:[], tujuan:[], status:[], laporan:[], antrian:[] };
@@ -492,14 +492,25 @@ function seedStatusLocal() {
   if (state.status.length === 0) {
     state.status = STATUS_DEFAULT.map(n => ({ id: STATUS_IDS[n], nama: n, createdAt: Date.now() }));
     lsSave('status', state.status);
+  } else if (!state.status.some(s => String(s.nama || '').trim().toUpperCase() === 'PENDING')) {
+    state.status.push({ id: 'st-pending', nama: 'PENDING', createdAt: Date.now() }); // mode offline: opsi PENDING tetap tersedia
+    lsSave('status', state.status);
   }
 }
 const terkirim = {}; // penanda koleksi sudah pernah mengirim snapshot (sinkron antrian tunggu data lengkap)
+let statusPendingDicek = false;
+function pastikanStatusPending() { // pastikan opsi "PENDING" ada di daftar status (dropdown form laporan) - ditambahkan sekali kalau belum ada
+  if (statusPendingDicek || !online || !db) return;
+  statusPendingDicek = true;
+  if (state.status.some(s => String(s.nama || '').trim().toUpperCase() === 'PENDING')) return; // hanya opsi PENDING persis yang dihitung; "KIRIMAN PENDING (...)" tidak menggantikan opsi PENDING
+  addRec('status', { nama: 'PENDING', createdAt: Date.now() }).catch(() => { statusPendingDicek = false; });
+}
 function subscribeAll() {
   COLS.forEach(col => {
     const unsub = db.collection(col).onSnapshot(snap => {
       state[col] = snap.docs.map(d => Object.assign({}, d.data(), { id: d.id })); // id dokumen selalu menang atas field id sisa restore
       terkirim[col] = true;
+      if (col === 'status') pastikanStatusPending(); // opsi PENDING selalu tersedia di dropdown status form laporan
       renderAll();
     }, err => goOffline(errText(err) + ' '));
   });
@@ -612,14 +623,21 @@ async function ketSimpan(id, v) { // keterangan disimpan di Daftar No Polisi (sa
   try { await updateRec('polisi', id, { ket: v2 }); showToast('Keterangan ' + rec.polisi + ' disimpan'); }
   catch (err) { alert('Gagal menyimpan: ' + errText(err)); }
 }
-async function setTujuanUnit(id, v) { // dropdown TUJUAN di papan rekap; begitu tujuan diisi, unit otomatis berubah jadi KIRIM
+async function setTujuanUnit(id, v) { // dropdown TUJUAN di papan rekap; tujuan diisi = otomatis KIRIM, kecuali teksnya ada kata "pending" (mis. PENDING KIRIM SENIN) = status PENDING
   const rec = state.polisi.find(x => x.id === id); if (!rec) return;
   const v2 = String(v || '').trim().toUpperCase();
   if ((rec.tujuan || '') === v2) return;
-  const jadiKirim = !!v2 && detailStatusRekap(rec).st !== 'KIRIM'; // tujuan diisi & unit belum KIRIM = langsung KIRIM
-  snapshotUndo(jadiKirim ? 'tujuan ' + rec.polisi + ' (otomatis KIRIM)' : 'ganti tujuan ' + rec.polisi, jadiKirim ? ['polisi', 'antrian'] : ['polisi']); // bisa dikembalikan lewat UNDO
+  const pendingTxt = v2.indexOf('PENDING') > -1; // teks pending di tujuan: bukan KIRIM, tapi PENDING
+  const jadiPending = !!v2 && pendingTxt && detailStatusRekap(rec).st !== 'PENDING';
+  const jadiKirim = !!v2 && !pendingTxt && detailStatusRekap(rec).st !== 'KIRIM'; // tujuan diisi & unit belum KIRIM = langsung KIRIM
+  snapshotUndo(jadiPending ? 'tujuan ' + rec.polisi + ' (PENDING)' : jadiKirim ? 'tujuan ' + rec.polisi + ' (otomatis KIRIM)' : 'ganti tujuan ' + rec.polisi, jadiPending || jadiKirim ? ['polisi', 'antrian'] : ['polisi']); // bisa dikembalikan lewat UNDO
   try {
-    if (jadiKirim) {
+    if (jadiPending) {
+      const an = state.antrian.find(a => normPol(a.polisi) === normPol(rec.polisi));
+      if (an) await updateRec('antrian', an.id, { status: 'PENDING', createdAt: Date.now(), muatAt: null, sumber: 'MANUAL' }); // antrian ikut PENDING (sinkron dengan rekap)
+      await updateRec('polisi', id, { tujuan: v2, kirimAt: Date.now() }); // tanggal & jam mulai PENDING tercatat
+      showToast(rec.polisi + ' PENDING (teks tujuan ada kata pending)');
+    } else if (jadiKirim) {
       const an = state.antrian.find(a => normPol(a.polisi) === normPol(rec.polisi));
       if (an) await updateRec('antrian', an.id, { status: 'MUAT/KIRIM', muatAt: Date.now() - 1000 }); // antrian ikut; sedikit di bawah waktu tujuan supaya rekap menunjukkan KIRIM
       await updateRec('polisi', id, { tujuan: v2, kirimAt: Date.now() }); // tanggal & waktu KIRIM tercatat otomatis
@@ -770,6 +788,7 @@ function onPolisiChange() {
 function badgeClass(s) {
   s = (s || '').toUpperCase();
   if (s === 'KIRIM' || s === 'MUAT/KIRIM') return 'b-green';
+  if (s === 'PENDING') return 'b-amber';
   if (s === 'STANDBY') return 'b-amber';
   if (s === 'INAP') return 'b-blue';
   if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'b-red';
@@ -787,8 +806,8 @@ function grupLaporan(arr) { // kelompokkan per kontrak (sama seperti antrian & m
   return Object.keys(map).sort((a, b) => (a === '' ? 1 : b === '' ? -1 : a.localeCompare(b, 'id', { numeric: true })))
     .map(k => ({ kontrak: k, items: map[k] }));
 }
-const STATUS_URUT_REKAP = ['INAP', 'KIRIM', 'MUAT/KIRIM', 'STANDBY', 'STORING PERBAIKAN'];
-const CHIP_WARNA = { 'INAP': 'c-blue', 'KIRIM': 'c-green', 'MUAT/KIRIM': 'c-navy', 'STANDBY': 'c-amber', 'STORING PERBAIKAN': 'c-red' };
+const STATUS_URUT_REKAP = ['INAP', 'KIRIM', 'MUAT/KIRIM', 'PENDING', 'STANDBY', 'STORING PERBAIKAN'];
+const CHIP_WARNA = { 'INAP': 'c-blue', 'KIRIM': 'c-green', 'MUAT/KIRIM': 'c-navy', 'PENDING': 'c-amber', 'STANDBY': 'c-amber', 'STORING PERBAIKAN': 'c-red' };
 const kunciHari = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
 const jamMenitSekarang = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
 const jam22Dari = tgl => { const d = new Date(String(tgl || '') + 'T22:00:00'); return isNaN(d.getTime()) ? 0 : d.getTime(); }; // jam 22:00 pada suatu tanggal
@@ -802,7 +821,8 @@ function detailStatusRekap(p) { // status otomatis + tanggal/waktu sejak status 
   const waktuTujuan = p.kirimAt || 0; // tujuan diisi pengurus -> peristiwa KIRIM tercatat otomatis
   const terbaru = Math.max(waktuAntrian, waktuLaporan, waktuTujuan);
   if (!terbaru) return { st: 'STANDBY', waktu: 0 }; // tanpa aktivitas = standby
-  if (waktuTujuan > 0 && terbaru === waktuTujuan) { // KIRIM karena tujuan baru saja diisi; jadi INAP jam 22:00 pada hari yang sama
+  if (waktuTujuan > 0 && terbaru === waktuTujuan) { // tujuan baru saja diisi: ada kata "pending" = PENDING, selain itu KIRIM (jadi INAP jam 22:00 pada hari yang sama)
+    if (String(p.tujuan || '').toUpperCase().indexOf('PENDING') > -1) return { st: 'PENDING', waktu: waktuTujuan }; // teks pending di tujuan: status PENDING, bukan KIRIM
     const tglK = kunciHari(waktuTujuan);
     if (lewatJam22(tglK)) return { st: 'INAP', waktu: jam22Dari(tglK) }; // tanggal & waktu berubah otomatis jadi jam 22:00
     return { st: 'KIRIM', waktu: waktuTujuan };
@@ -810,19 +830,21 @@ function detailStatusRekap(p) { // status otomatis + tanggal/waktu sejak status 
   if (waktuAntrian > 0 && terbaru === waktuAntrian) {
     const st = an.status || 'ANTRIAN DO';
     if (st === 'MUAT/KIRIM') return { st: 'MUAT/KIRIM', waktu: 0 }; // masih di pabrik: tetap MUAT/KIRIM, TANPA hitungan tanggal & waktu (tidak ikut aturan jam 22:00)
+    if (st === 'PENDING') return { st: 'PENDING', waktu: waktuAntrian }; // teks pending: rekap & antrian sama-sama tampil PENDING
     if (st === 'INAP') return { st: 'INAP', waktu: waktuAntrian }; // status dipasang langsung di antrian
     if (st === 'STORING PERBAIKAN') return { st: 'STORING PERBAIKAN', waktu: 0 }; // tetap storing sampai didaftarkan lagi ke antrian
     return { st: 'STANDBY', waktu: 0 }; // ANTRIAN DO / STANDBY = tunggu DO
   }
   if (l) {
     const st = String(l.status || '').toUpperCase();
+    if (st.indexOf('PENDING') > -1) return { st: 'PENDING', waktu: waktuLaporan }; // teks pending (mis. "PENDING KIRIM SENIN") SELALU jadi PENDING - menang atas semua kata status lain
     if (st.indexOf('STORING') > -1 || st.indexOf('PERBAIKAN') > -1) return { st: 'STORING PERBAIKAN', waktu: 0 }; // tetap storing sampai didaftarkan lagi ke antrian
     if (st.indexOf('INAP') > -1) return { st: 'INAP', waktu: waktuLaporan };
     if (st === 'KIRIM') { // hanya KIRIM yang jadi INAP otomatis jam 22:00 pada hari yang sama; tanggal & waktu ikut berubah jadi jam 22:00
       if (lewatJam22(l.tanggal)) return { st: 'INAP', waktu: jam22Dari(l.tanggal) };
       return { st: 'KIRIM', waktu: waktuLaporan };
     }
-    if (st.indexOf('MUAT') > -1 || st.indexOf('LOADING') > -1 || st.indexOf('PENDING') > -1) return { st: 'MUAT/KIRIM', waktu: 0 }; // masih di pabrik: tetap MUAT/KIRIM, tanpa hitungan tanggal & waktu
+    if (st.indexOf('MUAT') > -1 || st.indexOf('LOADING') > -1) return { st: 'MUAT/KIRIM', waktu: 0 }; // masih di pabrik: tetap MUAT/KIRIM, tanpa hitungan tanggal & waktu
   }
   return { st: 'STANDBY', waktu: 0 };
 }
@@ -856,18 +878,20 @@ function barisWaktuStatus(inf) { // teks kecil di bawah status, ditulis DUA SUSU
 }
 function statusAntrianDariLaporan(st) { // petakan status laporan (REKAP) ke status di antrian DO
   const s = String(st || '').toUpperCase();
+  if (s.indexOf('PENDING') > -1) return 'PENDING'; // kata pending menang atas semua kata status lain: antrian ikut tampil PENDING (sinkron dengan rekap)
   if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN';
   if (s.indexOf('INAP') > -1) return 'INAP';
-  if (s === 'KIRIM' || s.indexOf('MUAT') > -1 || s.indexOf('LOADING') > -1 || s.indexOf('PENDING') > -1) return 'MUAT/KIRIM';
+  if (s === 'KIRIM' || s.indexOf('MUAT') > -1 || s.indexOf('LOADING') > -1) return 'MUAT/KIRIM';
   if (s.indexOf('STANDBY') > -1) return 'STANDBY';
   return 'ANTRIAN DO'; // ANTRIAN dan lainnya = daftar lagi ke barisan tunggu
 }
 function statusRekapDariLaporanBaru(st, tgl) { // status rekap setelah laporan baru ini masuk (laporan jadi peristiwa terbaru), sama seperti cabang laporan di detailStatusRekap
   const s = String(st || '').toUpperCase();
+  if (s.indexOf('PENDING') > -1) return 'PENDING'; // teks pending (mis. "PENDING KIRIM SENIN") selalu jadi PENDING, menang atas kata status lain
   if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN';
   if (s.indexOf('INAP') > -1) return 'INAP';
   if (s === 'KIRIM') return lewatJam22(tgl) ? 'INAP' : 'KIRIM'; // hanya KIRIM yang berubah INAP jam 22:00; tanggal & waktu ikut jam 22:00
-  if (s.indexOf('MUAT') > -1 || s.indexOf('LOADING') > -1 || s.indexOf('PENDING') > -1) return 'MUAT/KIRIM'; // masih di pabrik: tetap MUAT/KIRIM walau lewat jam 22:00
+  if (s.indexOf('MUAT') > -1 || s.indexOf('LOADING') > -1) return 'MUAT/KIRIM'; // masih di pabrik: tetap MUAT/KIRIM walau lewat jam 22:00
   return 'STANDBY';
 }
 async function sinkronAntrianDariLaporan(d, tLap, sebelum, l0) { // REKAP berubah karena laporan -> status di ANTRIAN DO ikut otomatis (dua arah)
@@ -1092,8 +1116,8 @@ function waRekap() {
 }
 
 /* ================= ANTRIAN DO ================= */
-const ANT_STATUS = ['ANTRIAN DO', 'MUAT/KIRIM', 'INAP', 'STANDBY', 'STORING PERBAIKAN']; // status yang bisa dipilih di antrian DO
-const PRIO_STATUS = { 'ANTRIAN DO': 1, 'STANDBY': 2, 'INAP': 3, 'STORING PERBAIKAN': 4, 'MUAT/KIRIM': 5 }; // kalau satu no polisi muncul berkali-kali di satu paste, status tindakan (masuk/muat) yang menang
+const ANT_STATUS = ['ANTRIAN DO', 'MUAT/KIRIM', 'PENDING', 'INAP', 'STANDBY', 'STORING PERBAIKAN']; // status yang bisa dipilih di antrian DO
+const PRIO_STATUS = { 'ANTRIAN DO': 1, 'STANDBY': 2, 'INAP': 3, 'STORING PERBAIKAN': 4, 'PENDING': 5, 'MUAT/KIRIM': 6 }; // kalau satu no polisi muncul berkali-kali di satu paste, status tindakan (masuk/muat) yang menang
 let antPreviewItems = [];
 const fmtWaktu = ts => { if (!ts) return '-'; const d = new Date(ts); return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
 const fmtDurasi = ms => { // akumulasi lamanya dari tanggal ke tanggal (hari + jam)
@@ -1105,10 +1129,12 @@ const fmtDurasi = ms => { // akumulasi lamanya dari tanggal ke tanggal (hari + j
 };
 function antBadge(s) {
   if (s === 'MUAT/KIRIM') return 'b-green';
+  if (s === 'PENDING') return 'b-amber';
   return 'b-gray';
 }
 function detectStatusAntrian(line) { // baris chat yang ada kata kuncinya langsung jadi status itu; baris biasa = daftar antrian
   const s = ' ' + String(line).toLowerCase() + ' ';
+  if (/\bpending\b/.test(s)) return 'PENDING'; // kata "pending" menang atas kata status lain (mis. "pending kirim senin")
   if (/\bmasuk\b|\bmuat\b|\bloading\b/.test(s)) return 'MUAT/KIRIM';
   if (/\bstoring\b|\bperbaikan\b/.test(s)) return 'STORING PERBAIKAN';
   if (/\binap\b/.test(s)) return 'INAP';
@@ -1272,11 +1298,11 @@ function grupAntrian(arr) {
   return Object.keys(map).sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b, 'id', { numeric: true })))
     .map(k => ({ kontrak: k, items: map[k] }));
 }
-const URUT_STATUS_ANTRIAN = ['ANTRIAN DO', 'STANDBY', 'INAP', 'STORING PERBAIKAN', 'MUAT/KIRIM']; // ANTRIAN DO & STANDBY sama-sama di barisan tunggu bernomor; lalu INAP, STORING PERBAIKAN, dan MUAT/KIRIM paling bawah
+const URUT_STATUS_ANTRIAN = ['ANTRIAN DO', 'STANDBY', 'INAP', 'STORING PERBAIKAN', 'MUAT/KIRIM', 'PENDING']; // ANTRIAN DO & STANDBY sama-sama di barisan tunggu bernomor; lalu INAP, STORING PERBAIKAN, MUAT/KIRIM, dan PENDING paling bawah
 function urutanAntrian(arr) { // dalam tiap kontrak: barisan tunggu dulu (ANTRIAN DO & STANDBY sama-sama menunggu DO, paling lama menunggu = no 1); di bawahnya unit yang keluar dari barisan, urut sesuai statusnya
   const st = r => r.status || 'ANTRIAN DO';
   const tunggu = r => st(r) === 'ANTRIAN DO' || st(r) === 'STANDBY';
-  const bobot = r => tunggu(r) ? 0 : Math.max(1, URUT_STATUS_ANTRIAN.indexOf(st(r))); // INAP=2, STORING PERBAIKAN=3, MUAT/KIRIM=4
+  const bobot = r => tunggu(r) ? 0 : Math.max(1, URUT_STATUS_ANTRIAN.indexOf(st(r))); // INAP=2, STORING PERBAIKAN=3, MUAT/KIRIM=4, PENDING=5
   const waktu = r => tunggu(r) ? (r.createdAt || 0) : (r.muatAt || r.createdAt || 0);
   return arr.slice().sort((a, b) => bobot(a) - bobot(b) || waktu(a) - waktu(b) || String(a.id).localeCompare(String(b.id)));
 }
@@ -1467,9 +1493,10 @@ const akhirBulan = m => { const p = String(m || '').split('-'); return kunciHari
 const hariBerikutnya = tgl => { const d = new Date(String(tgl || '') + 'T00:00:00'); if (isNaN(d.getTime())) return tgl; d.setDate(d.getDate() + 1); return kunciHari(d.getTime()); }; // tanggal esoknya
 function statusDariLaporanHarian(st) { // samakan label status laporan dengan label papan rekap
   const s = String(st || '').toUpperCase();
+  if (s.indexOf('PENDING') > -1) return 'PENDING'; // teks pending (mis. "PENDING KIRIM SENIN") tampil PENDING, menang atas kata status lain
   if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN';
   if (s.indexOf('INAP') > -1) return 'INAP';
-  if (s.indexOf('MUAT') > -1 || s.indexOf('LOADING') > -1 || s.indexOf('PENDING') > -1) return 'MUAT/KIRIM';
+  if (s.indexOf('MUAT') > -1 || s.indexOf('LOADING') > -1) return 'MUAT/KIRIM';
   if (s.indexOf('STANDBY') > -1 || s.indexOf('ANTRIAN') > -1 || s === '') return 'STANDBY';
   return s; // status lain (mis. KIRIM) tampil apa adanya
 }
