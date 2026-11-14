@@ -827,6 +827,33 @@ function detailStatusRekap(p) { // status otomatis + tanggal/waktu sejak status 
   return { st: 'STANDBY', waktu: 0 };
 }
 function statusRekap(p) { return detailStatusRekap(p).st; } // status saja (untuk pemakaian lama)
+function infoWaktuStatus(p) { // tanggal & jam + akumulasi durasi status sekarang untuk papan REKAP & ANTRIAN DO (mesin waktu yang sama = selalu sinkron); rentang tunggu DO yang sudah lewat dibekukan
+  const an = state.antrian.find(a => normPol(a.polisi) === normPol(p.polisi));
+  const d = detailStatusRekap(p);
+  const st = d.st, kini = Date.now();
+  let sejak = 0;
+  if (st === 'STANDBY') sejak = an ? (an.createdAt || 0) : 0; // sejak tanggal & jam mendaftar DO
+  else if (st === 'MUAT/KIRIM') sejak = an ? (an.muatAt || an.createdAt || 0) : 0;
+  else if (st === 'STORING PERBAIKAN') { // sejak laporan storing terbaru, atau sejak status dipasang di antrian
+    const ls = state.laporan.filter(l => normPol(l.polisi) === normPol(p.polisi) && (String(l.status || '').toUpperCase().indexOf('STORING') > -1 || String(l.status || '').toUpperCase().indexOf('PERBAIKAN') > -1)).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
+    sejak = (ls && ls.createdAt) || (an && an.status === 'STORING PERBAIKAN' ? (an.createdAt || 0) : 0);
+  } else sejak = d.waktu; // KIRIM & INAP sudah punya tanggal & jam otomatis
+  const info = { st: st, sejak: sejak || 0, sampai: kini, durasi: sejak ? Math.max(kini - sejak, 0) : 0, tunggu: null };
+  if (st !== 'STANDBY' && an) { // rentang tunggu DO dibekukan: dari tanggal mendaftar DO sampai keluar barisan (MUAT/KIRIM); tetap tampil selama unit KIRIM / MUAT-KIRIM / INAP / STORING
+    const daftar = an.daftarAt || (((an.status || '') === 'ANTRIAN DO' || (an.status || '') === 'STANDBY' || (an.status || '') === 'MUAT/KIRIM') ? (an.createdAt || 0) : 0); // data lama MUAT/KIRIM: createdAt masih waktu mendaftar DO
+    const lKirim = state.laporan.filter(l => normPol(l.polisi) === normPol(p.polisi) && (statusDariLaporanHarian(l.status) === 'KIRIM' || statusDariLaporanHarian(l.status) === 'MUAT/KIRIM')).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
+    const keluar = (an.muatAt || 0) || (lKirim && lKirim.createdAt) || (st === 'MUAT/KIRIM' ? sejak : 0) || 0;
+    if (daftar > 0 && keluar > daftar) info.tunggu = { sejak: daftar, sampai: keluar, durasi: keluar - daftar };
+  }
+  return info;
+}
+function barisWaktuStatus(inf) { // teks kecil di bawah status, ditulis DUA SUSUN supaya kolom tidak kelebaran: susun 1 durasi+sejak, susun 2 sampai (+ tunggu DO yang dibekukan)
+  if (!inf || !inf.sejak) return '';
+  let h = '<div style="font-size:11px;color:var(--mut);margin-top:3px"><b style="color:#334155">' + fmtDurasi(inf.durasi) + '</b> · sejak ' + fmtWaktu(inf.sejak) + '</div>';
+  h += '<div style="font-size:11px;color:var(--mut)">sampai ' + fmtWaktu(inf.sampai) + '</div>';
+  if (inf.tunggu) h += '<div style="font-size:10px;color:#64748b;margin-top:2px">tunggu DO ' + fmtDurasi(inf.tunggu.durasi) + '</div><div style="font-size:10px;color:#64748b">sejak ' + fmtWaktu(inf.tunggu.sejak) + ' · dibekukan ' + fmtWaktu(inf.tunggu.sampai) + '</div>';
+  return h;
+}
 function statusAntrianDariLaporan(st) { // petakan status laporan (REKAP) ke status di antrian DO
   const s = String(st || '').toUpperCase();
   if (s.indexOf('STORING') > -1 || s.indexOf('PERBAIKAN') > -1) return 'STORING PERBAIKAN';
@@ -855,12 +882,12 @@ async function sinkronAntrianDariLaporan(d, tLap, sebelum, l0) { // REKAP beruba
   if (lama === baru) return;
   try {
     if (baru === 'ANTRIAN DO') { // daftar lagi: nomor tunggu paling bawah, tujuan lama di rekap otomatis dikosongkan
-      await updateRec('antrian', an.id, { status: 'ANTRIAN DO', createdAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
+      await updateRec('antrian', an.id, { status: 'ANTRIAN DO', createdAt: Date.now(), daftarAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
       await kosongkanTujuanUnit(d.polisi);
     } else if (baru === 'MUAT/KIRIM') await updateRec('antrian', an.id, { status: 'MUAT/KIRIM', muatAt: tLap - 1000 }); // keluar dari barisan; sedikit di bawah waktu laporan supaya rekap tetap menunjukkan KIRIM/MUAT-KIRIM
     else if (baru === 'STANDBY') { // STANDBY = masih tunggu DO: kalau sudah di barisan (ANTRIAN DO), nomor urutnya tetap; kalau dari luar barisan, masuk paling bawah
       if (lama === 'ANTRIAN DO') await updateRec('antrian', an.id, { status: 'STANDBY', muatAt: null, sumber: 'MANUAL' });
-      else await updateRec('antrian', an.id, { status: 'STANDBY', createdAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
+      else await updateRec('antrian', an.id, { status: 'STANDBY', createdAt: Date.now(), daftarAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
     }
     else await updateRec('antrian', an.id, { status: baru, createdAt: Date.now(), muatAt: null, sumber: 'MANUAL' }); // INAP / STORING PERBAIKAN
     showToast('' + an.polisi + ' di antrian DO ikut otomatis: ' + baru);
@@ -880,8 +907,8 @@ function renderRekap() { // dikelompokkan per KONTRAK; di dalam tiap kontrak uru
     $('statsRow').innerHTML = '<span class="chip c-navy">Total: 0</span>';
     return;
   }
-  const status = {}, waktuSt = {};
-  daftar.forEach(p => { const d = detailStatusRekap(p); status[p.id] = d.st; waktuSt[p.id] = d.waktu; });
+  const status = {}, infos = {};
+  daftar.forEach(p => { const d = detailStatusRekap(p); status[p.id] = d.st; infos[p.id] = infoWaktuStatus(p); });
   const bobot = st => STATUS_URUT_REKAP.indexOf(st);
   const hit = {};
   daftar.forEach(p => { const st = status[p.id]; hit[st] = (hit[st] || 0) + 1; });
@@ -889,15 +916,14 @@ function renderRekap() { // dikelompokkan per KONTRAK; di dalam tiap kontrak uru
   grupPolisi(daftar).forEach(g => {
     const c = warnaKontrak(g.kontrak);
     const items = g.items.slice().sort((a, b) => bobot(status[a.id]) - bobot(status[b.id]) || (a.polisi || '').localeCompare(b.polisi || '', 'id'));
-    html += bandKontrak(g.kontrak, items.length, 6, c, false);
+    html += bandKontrak(g.kontrak, items.length, 6, c, true, 'rekap'); // tombol WA per kontrak, sama seperti di antrian DO
     html += items.map((p, i) => {
       const st = status[p.id];
       return '<tr><td style="font-weight:800">' + (i + 1) + '</td>' +
         '<td style="font-weight:700;color:var(--navy)">' + esc(p.polisi) + '</td>' +
         '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(g.kontrak || '-') + '</td>' +
         '<td>' + optTujuanRekap(p) + '</td>' +
-        '<td><span class="badge ' + badgeClass(st) + '">' + esc(st) + '</span>' +
-        (waktuSt[p.id] ? '<div style="font-size:11px;color:var(--mut);margin-top:3px;white-space:nowrap">sejak ' + fmtWaktu(waktuSt[p.id]) + '</div>' : '') + '</td>' +
+        '<td><span class="badge ' + badgeClass(st) + '">' + esc(st) + '</span>' + barisWaktuStatus(infos[p.id]) + '</td>' +
         '<td><div class="aksi">' +
         '<button class="btn mini btn-blue" title="Edit no polisi / kontrak unit ini" onclick="masterEdit(\'polisi\',\'' + p.id + '\')">Edit</button>' +
         '<button class="btn mini btn-red" title="Hapus unit ini (bisa di-UNDO lewat tombol di atas)" onclick="hapusMaster(\'polisi\',\'' + p.id + '\')">Hapus</button>' +
@@ -1070,6 +1096,13 @@ const ANT_STATUS = ['ANTRIAN DO', 'MUAT/KIRIM', 'INAP', 'STANDBY', 'STORING PERB
 const PRIO_STATUS = { 'ANTRIAN DO': 1, 'STANDBY': 2, 'INAP': 3, 'STORING PERBAIKAN': 4, 'MUAT/KIRIM': 5 }; // kalau satu no polisi muncul berkali-kali di satu paste, status tindakan (masuk/muat) yang menang
 let antPreviewItems = [];
 const fmtWaktu = ts => { if (!ts) return '-'; const d = new Date(ts); return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const fmtDurasi = ms => { // akumulasi lamanya dari tanggal ke tanggal (hari + jam)
+  if (!ms || ms <= 0) return '-';
+  const mnt = Math.floor(ms / 60000), jam = Math.floor(mnt / 60), hari = Math.floor(jam / 24);
+  if (hari > 0) return hari + ' hari ' + (jam % 24) + ' jam';
+  if (jam > 0) return jam + ' jam ' + (mnt % 60) + ' mnt';
+  return mnt + ' mnt';
+};
 function antBadge(s) {
   if (s === 'MUAT/KIRIM') return 'b-green';
   return 'b-gray';
@@ -1119,7 +1152,7 @@ async function simpanAntrianList(items, sumber) {
         const stLama = ex.status || 'ANTRIAN DO';
         if (f.status === 'ANTRIAN DO') { // daftar lagi: dapat nomor tunggu paling bawah, nomor di atasnya menyesuaikan, tujuan lama di rekap otomatis dikosongkan
           if (stLama !== 'ANTRIAN DO') tambah++;
-          await updateRec('antrian', ex.id, { status: 'ANTRIAN DO', createdAt: Date.now() + i, muatAt: null, sumber: sumber });
+          await updateRec('antrian', ex.id, { status: 'ANTRIAN DO', createdAt: Date.now() + i, daftarAt: Date.now() + i, muatAt: null, sumber: sumber });
           await kosongkanTujuanUnit(f.polisi, true);
           geser++;
         } else if (f.status === 'MUAT/KIRIM') { // kata "masuk"/"muat"/"loading": keluar dari barisan, nempel paling bawah
@@ -1127,11 +1160,12 @@ async function simpanAntrianList(items, sumber) {
           await updateRec('antrian', ex.id, { status: 'MUAT/KIRIM', muatAt: Date.now() + i });
           geser++;
         } else { // INAP / STANDBY / STORING PERBAIKAN (kata kunci atau pilihan di pratinjau): keluar dari barisan sesuai statusnya
-          await updateRec('antrian', ex.id, { status: f.status, createdAt: Date.now() + i, muatAt: null, sumber: sumber });
+          await updateRec('antrian', ex.id, Object.assign({ status: f.status, createdAt: Date.now() + i, muatAt: null, sumber: sumber }, (f.status === 'ANTRIAN DO' || f.status === 'STANDBY') ? { daftarAt: Date.now() + i } : {}));
           geser++;
         }
       } else { // benar-benar baru: masuk sesuai statusnya; ANTRIAN DO dapat nomor tunggu paling bawah
         const rec = { polisi: f.polisi, status: f.status, sumber: sumber, tanggal: todayStr(), createdAt: Date.now() + i };
+        if (f.status === 'ANTRIAN DO' || f.status === 'STANDBY') rec.daftarAt = rec.createdAt; // cap waktu mendaftar DO (untuk rentang tunggu yang dibekukan)
         if (f.status === 'MUAT/KIRIM') rec.muatAt = Date.now() + i;
         await addRec('antrian', rec);
         if (f.status === 'ANTRIAN DO') tambah++; else pindah++;
@@ -1196,10 +1230,10 @@ async function submitAntrianManual(e) {
   const ex = state.antrian.find(a => normPol(a.polisi) === key);
   try {
     if (ex) { // sudah ada (ganda): tidak dibuat dobel, lokasinya saja disesuaikan ke nomor tunggu paling bawah
-      await updateRec('antrian', ex.id, { status: 'ANTRIAN DO', createdAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
+      await updateRec('antrian', ex.id, { status: 'ANTRIAN DO', createdAt: Date.now(), daftarAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
       showToast(pol + ' sudah ada di antrian - dipindah ke nomor tunggu paling bawah');
     } else {
-      await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', sumber: 'MANUAL', tanggal: todayStr() });
+      await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', sumber: 'MANUAL', tanggal: todayStr(), createdAt: Date.now(), daftarAt: Date.now() });
       if (!state.polisi.some(p => normPol(p.polisi) === key)) await addRec('polisi', { polisi: pol, kontrak: '' });
       showToast('' + pol + ' masuk antrian - kontrak diisi nanti di master/input');
     }
@@ -1223,9 +1257,10 @@ function warnaKontrak(k) { // warna tetap untuk tiap kontrak (sama di tabel antr
 function kontrakKey(v) { // "KONTRAK MIL/WING BOX" dan "MIL/WING BOX" jadi satu kelompok yang sama
   return String(v || '').trim().toUpperCase().replace(/^KONTRAK\s+/, '');
 }
-function bandKontrak(kontrak, jumlah, colspan, c, aksiWa) { // baris pembatas antar kelompok kontrak (+ tombol WA di antrian)
+function bandKontrak(kontrak, jumlah, colspan, c, aksiWa, mode) { // baris pembatas antar kelompok kontrak (+ tombol WA: mode 'antrian' atau 'rekap')
+  const fn = mode === 'rekap' ? 'waRekapKontrak' : 'waAntrianKontrak';
   return '<tr class="ant-grp"><td colspan="' + colspan + '" style="background:' + c.bg + ';color:' + c.fg + ';border-top-color:' + c.fg + '"># KONTRAK ' + esc(kontrak || '(BELUM DIISI)') + ' <span style="font-weight:600;opacity:.75">- ' + jumlah + ' unit</span>' +
-    (aksiWa ? ' <button class="btn mini btn-green" style="margin-left:6px" data-k="' + esc(kontrak || '') + '" onclick="waAntrianKontrak(this.getAttribute(\'data-k\'))">WA</button>' : '') + '</td></tr>';
+    (aksiWa ? ' <button class="btn mini btn-green" style="margin-left:6px" data-k="' + esc(kontrak || '') + '" onclick="' + fn + '(this.getAttribute(\'data-k\'))">WA</button>' : '') + '</td></tr>';
 }
 function grupAntrian(arr) {
   const map = {};
@@ -1260,7 +1295,7 @@ async function jalankanSinkronAntrian() { // antrian DO selalu SAMA dengan Dafta
       const k = normPol(p.polisi);
       if (ada.has(k)) continue;
       ada.add(k);
-      await addRec('antrian', { polisi: p.polisi, status: 'ANTRIAN DO', sumber: 'MASTER', tanggal: todayStr() });
+      await addRec('antrian', { polisi: p.polisi, status: 'ANTRIAN DO', sumber: 'MASTER', tanggal: todayStr(), createdAt: Date.now(), daftarAt: Date.now() });
     }
     for (const a of buang) await deleteRec('antrian', a.id);
   } catch (e) {}
@@ -1295,11 +1330,13 @@ function renderAntrian() {
     g.items.forEach(r => {
       const st = r.status || 'ANTRIAN DO';
       const opts = ANT_STATUS.map(s => '<option value="' + s + '"' + (s === st ? ' selected' : '') + '>' + s + '</option>').join('');
+      const pM = state.polisi.find(x => normPol(x.polisi) === normPol(r.polisi)); // info waktu memakai mesin yang sama dengan papan REKAP (status antrian & rekap sinkron)
+      const inf = pM ? infoWaktuStatus(pM) : null;
       const baris = '<tr><td style="font-weight:800">' + ((st === 'ANTRIAN DO' || st === 'STANDBY') ? (++no) : '-') + '</td>' +
         '<td style="font-weight:700;color:var(--navy)">' + esc(r.polisi) + '</td>' +
         '<td class="kontrak-cell" style="color:' + c.fg + '">' + esc(r.kontrak || '-') + '</td>' +
-        '<td><select class="sel-mini" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
-        '<td class="nowrap">' + fmtWaktu((st === 'ANTRIAN DO' || st === 'STANDBY') ? r.createdAt : (r.muatAt || r.createdAt)) + '</td>' +
+        '<td><select class="sel-mini" style="width:100%;min-width:140px" onchange="setStatusAntrian(\'' + r.id + '\', this.value)">' + opts + '</select></td>' +
+        '<td>' + (inf && inf.sejak ? barisWaktuStatus(inf) : fmtWaktu((st === 'ANTRIAN DO' || st === 'STANDBY') ? r.createdAt : (r.muatAt || r.createdAt))) + '</td>' +
         '<td><div class="aksi">' +
         '<button class="btn mini btn-blue" title="Buat laporan dari antrian" onclick="buatLaporanDariAntrian(\'' + r.id + '\')">Laporan</button>' +
         '</div></td></tr>';
@@ -1315,7 +1352,7 @@ async function setStatusAntrian(id, status) {
   snapshotUndo('status ' + r.polisi + ' jadi ' + status, ['antrian', 'polisi']); // bisa dikembalikan lewat UNDO
   try {
     if (status === 'ANTRIAN DO') { // daftar lagi: masuk barisan tunggu, dapat nomor paling bawah, tujuan lama di rekap otomatis dikosongkan
-      await updateRec('antrian', id, { status: 'ANTRIAN DO', createdAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
+      await updateRec('antrian', id, { status: 'ANTRIAN DO', createdAt: Date.now(), daftarAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
       await kosongkanTujuanUnit(r.polisi);
       showToast(r.polisi + ' masuk barisan lagi - nomor tunggu paling bawah, tujuan lama dikosongkan');
     } else if (status === 'MUAT/KIRIM') { // keluar dari barisan, nempel paling bawah
@@ -1326,7 +1363,7 @@ async function setStatusAntrian(id, status) {
         await updateRec('antrian', id, { status: 'STANDBY', muatAt: null, sumber: 'MANUAL' });
         showToast(r.polisi + ' STANDBY - tetap di barisan, nomor urutnya tidak berubah');
       } else { // dari MUAT/KIRIM / INAP / STORING: masuk barisan lagi, nomor paling bawah
-        await updateRec('antrian', id, { status: 'STANDBY', createdAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
+        await updateRec('antrian', id, { status: 'STANDBY', createdAt: Date.now(), daftarAt: Date.now(), muatAt: null, sumber: 'MANUAL' });
         showToast(r.polisi + ' STANDBY - masuk barisan, nomor tunggu paling bawah');
       }
     } else { // INAP / STORING PERBAIKAN: keluar dari barisan, posisinya mengikuti urutan statusnya
@@ -1346,6 +1383,17 @@ function buatLaporanDariAntrian(id) {
   onPolisiChange();
   $('panel-input').scrollIntoView({ behavior: 'smooth' });
   showToast('' + r.polisi + ' siap dilaporkan - lengkapi tujuan lalu simpan');
+}
+function waRekapKontrak(kontrak) { // kirim rekap satu kontrak lewat WhatsApp: no polisi - status - tujuan tiap unit, urut sama seperti papan rekap
+  const key = kontrakKey(kontrak);
+  const arr = urutSepertiDaftarPolisi().filter(p => kontrakKey(p.kontrak) === key);
+  if (!arr.length) { alert('Kontrak itu belum punya unit.'); return; }
+  const bobot = st => STATUS_URUT_REKAP.indexOf(st);
+  const items = arr.slice().sort((a, b) => bobot(statusRekap(a)) - bobot(statusRekap(b)) || (a.polisi || '').localeCompare(b.polisi || '', 'id'));
+  let t = 'REKAP LAPORAN - KONTRAK ' + (key || '(BELUM DIISI)') + ' - SINAR MAJU JAYA\n' + fmtDate(todayStr()) + '\n';
+  items.forEach((p, i) => { const d = detailStatusRekap(p); t += (i + 1) + '. ' + p.polisi + ' - ' + d.st + (p.tujuan ? ' - ' + p.tujuan : '') + '\n'; });
+  t += '\nTotal: ' + items.length + ' unit';
+  waOpen(t);
 }
 function waAntrianKontrak(kontrak) { // kirim antrian satu kontrak lewat WhatsApp
   const key = kontrakKey(kontrak);
@@ -1530,12 +1578,12 @@ async function submitPolisi(e) {
       await updateRec('polisi', editMaster.id, { polisi: pol, kontrak: kon });
       const exAn = state.antrian.find(a => normPol(a.polisi) === normPol(lama));
       if (exAn) await updateRec('antrian', exAn.id, { polisi: pol }); // nama berubah, antrian ikut
-      else await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', tanggal: todayStr() }); // pastikan unit ada di antrian kontraknya
+      else await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', tanggal: todayStr(), createdAt: Date.now(), daftarAt: Date.now() }); // pastikan unit ada di antrian kontraknya
       showToast('No polisi diperbarui');
     } else {
       if (state.polisi.some(x => (x.polisi || '').toUpperCase() === pol)) { alert('No polisi sudah terdaftar!'); return; }
       await addRec('polisi', { polisi: pol, kontrak: kon });
-      if (!state.antrian.some(a => normPol(a.polisi) === normPol(pol))) await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', tanggal: todayStr() }); // otomatis masuk antrian kontraknya
+      if (!state.antrian.some(a => normPol(a.polisi) === normPol(pol))) await addRec('antrian', { polisi: pol, status: 'ANTRIAN DO', tanggal: todayStr(), createdAt: Date.now(), daftarAt: Date.now() }); // otomatis masuk antrian kontraknya
       showToast('No polisi ditambahkan + langsung masuk antrian DO');
     }
   } catch (err) { alert('Gagal menyimpan: ' + errText(err)); return; }
@@ -1634,7 +1682,7 @@ async function submitQuick(e) {
       if (!kon) { alert('Pilih kontrak dulu!'); return; }
       if (!state.polisi.some(x => (x.polisi || '').toUpperCase() === nm)) {
         await addRec('polisi', { polisi: nm, kontrak: kon });
-        if (!state.antrian.some(a => normPol(a.polisi) === normPol(nm))) await addRec('antrian', { polisi: nm, status: 'ANTRIAN DO', tanggal: todayStr() }); // otomatis masuk antrian kontraknya
+        if (!state.antrian.some(a => normPol(a.polisi) === normPol(nm))) await addRec('antrian', { polisi: nm, status: 'ANTRIAN DO', tanggal: todayStr(), createdAt: Date.now(), daftarAt: Date.now() }); // otomatis masuk antrian kontraknya
       }
       pendingSelect = { col: 'polisi', v: nm };
     } else {
